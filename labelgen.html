@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            background-color: gray;
+        }
+        
+        #preview {
+            visibility: hidden;
+            height: 0;
+        }
+    </style>
+    <script>
+        function getTextWidth() {
+            let span = document.getElementById('tspan');
+            let textwidth = span.textLength.baseVal.value;
+            return textwidth;
+        }
+
+        function updatePreview() {
+            let words = document.getElementById('source').value;
+            let span = document.getElementById('tspan');
+            span.textContent = words;
+
+            let textwidth = getTextWidth();
+            let svg = document.getElementById('svg');
+
+            svg.setAttribute("width", textwidth + 20); // text width + 10 margin
+            generatePng();
+        }
+
+        function generatePng() {
+            let svg = document.getElementById('svg');
+            let svgDimensions = svg.getBBox();
+
+            let svgString = new XMLSerializer().serializeToString(svg);
+
+            let canvas = document.getElementById("renderer");
+            let textwidth = getTextWidth();
+
+            canvas.setAttribute('width', textwidth + 20);
+
+            let ctx = canvas.getContext("2d");
+            let DOMURL = self.URL || self.webkitURL || self;
+            let img = new Image();
+            var svgUrl = new Blob([svgString], {
+                type: "image/svg+xml;charset=utf-8"
+            });
+
+            let url = DOMURL.createObjectURL(svgUrl);
+
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0);
+            };
+            img.src = url;
+
+        }
+
+        function prepareDownload() {
+            let words = document.getElementById('source').value;
+            let link = document.getElementById('download');
+
+            let canvas = document.getElementById("renderer");
+            var dataURL = canvas.toDataURL('image/png');
+
+            link.setAttribute('href', dataURL);
+            link.setAttribute('download', encodeURIComponent(words) + ".png");
+        }
+
+        function updateFont() {
+            let font = document.getElementById('font').value;
+            let text = document.getElementById('text');
+            text.setAttribute('font-family', font);
+
+            // setTimeout(updatePreview, 0);
+            updatePreview();
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            let source = document.getElementById('source');
+            source.addEventListener('keyup', updatePreview);
+
+            let link = document.getElementById('download');
+            link.addEventListener('click', e => {
+                let self = this;
+                let canvas = document.getElementById("renderer");
+                var dataURL = canvas.toDataURL('image/png');
+                link.href = dataURL;
+
+                let words = document.getElementById('source').value;
+                link.setAttribute('download', words + '.png');
+            });
+
+            let fonts = document.getElementById('font');
+            fonts.addEventListener('change', updateFont);
+        });
+    </script>
+</head>
+
+<body>
+    <section id="input">
+        <input type="text" id="source">
+        <select id="font">
+          <option value="Centaur">Centaur</option>
+          <option value="Book Antiqua">Book Antiqua</option>
+          <option value="Comic Sans MS">Comic Sans MS</option>
+          <option value="Consolas">Consolas</option>
+        </select>
+        <a href="#" class="button" id="download" download="">Download!</button>
+    </section>
+    <section id="preview">
+        <svg xmlns="http://www.w3.org/2000/svg" width="700" height="120" id="svg">
+          <style id="svgstyle">
+#text {  
+  font-style:normal;
+  font-weight:normal;
+  font-size:80px;
+  line-height:125%;
+  
+  
+  letter-spacing:0px;
+  word-spacing:0px;
+  fill: #000000;
+  fill-opacity:1;
+  stroke:#ffffff;
+  stroke-opacity: 0.8;
+  stroke-width:6;
+  stroke-linecap:butt;
+  stroke-linejoin:miter;
+  stroke-miterlimit:4;
+  stroke-dasharray:none;
+  paint-order:stroke fill;
+}
+          </style>
+        <g id="layer1"
+        x="0"
+        y="0">
+          <text id="text"
+          x="10"
+              y="80"
+              font-family="Centaur"
+            xml:space="preserve">
+            <tspan id="tspan"
+              x="10"
+              y="80"
+              >Some Text</tspan>
+          </text>
+        </g>
+      </svg>
+    </section>
+    <section id="output">
+        <canvas id="renderer" height="120"></canvas>
+    </section>
+
+</body>
+
+</html>
