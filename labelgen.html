@@ -2,65 +2,74 @@
 <html>
 
 <head>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="labelgen.css">
     <script src="labelgen.js"></script>
 </head>
 
 <body>
-    <section id="input">
-        <input type="text" id="source">
-        <select id="font">
-          <option value="Centaur">Centaur</option>
-          <option value="Book Antiqua">Book Antiqua</option>
-          <option value="Comic Sans MS">Comic Sans MS</option>
-          <option value="Consolas">Consolas</option>
-        </select>
-        <a href="#" class="button" id="download" download="">Download!</button>
-    </section>
-    <section id="preview">
-        <svg xmlns="http://www.w3.org/2000/svg" width="700" height="120" id="svg">
-          <style id="svgstyle">
-#text {  
-  font-style:normal;
-  font-weight:normal;
-  font-size:80px;
-  line-height:125%;
-  
-  
-  letter-spacing:0px;
-  word-spacing:0px;
-  fill: #000000;
-  fill-opacity:1;
-  stroke:#ffffff;
-  stroke-opacity: 0.8;
-  stroke-width:6;
-  stroke-linecap:butt;
-  stroke-linejoin:miter;
-  stroke-miterlimit:4;
-  stroke-dasharray:none;
-  paint-order:stroke fill;
-}
-          </style>
-        <g id="layer1"
-        x="0"
-        y="0">
-          <text id="text"
-          x="10"
-              y="80"
-              font-family="Centaur"
-            xml:space="preserve">
-            <tspan id="tspan"
-              x="10"
-              y="80"
-              >Some Text</tspan>
-          </text>
-        </g>
-      </svg>
-    </section>
-    <section id="output">
-        <canvas id="renderer" height="120"></canvas>
-    </section>
+    <header>
+        <h1>Roll20 Map Label Generator</h1>
+    </header>
+    <main>
+        <section id="input">
+            <h2>Description</h2>
+            <p>
+                This tool will generate transparent PNGs of text with a semi-transparent white outline, perfect for putting on your Roll20 maps.
+            </p>
+            <p>
+                Simply type your desired label text in the input field below and click the "Download" button to get your labels.
+            </p>
 
+            <label for="font">Font: </label>
+            <select id="font" name="font">
+                    <option value="Book Antiqua" style="font-family: 'Book Antiqua';">Book Antiqua</option>
+                  <option value="Centaur" selected style="font-family: Centaur;">Centaur</option>
+                
+                <option value="Comic Sans MS" style="font-family: 'Comic Sans MS';">Comic Sans MS</option>
+                <option value="Consolas" style="font-family: 'Consolas';">Consolas</option>
+            </select>
+            <label for="source">Label text: </label>
+            <input type="text" id="source" name="source" placeholder="Write your label here!">
+            <a href="#" class="button" id="download" download="">Download!</a>
+        </section>
+
+
+        <section id="preview">
+            <svg xmlns="http://www.w3.org/2000/svg" width="700" height="120" id="svg">
+                <style id="svgstyle">
+                    #text {
+                        font-style: normal;
+                        font-weight: normal;
+                        font-size: 80px;
+                        line-height: 125%;
+
+
+                        letter-spacing: 0px;
+                        word-spacing: 0px;
+                        fill: #000000;
+                        fill-opacity: 1;
+                        stroke: #ffffff;
+                        stroke-opacity: 0.8;
+                        stroke-width: 6;
+                        stroke-linecap: butt;
+                        stroke-linejoin: miter;
+                        stroke-miterlimit: 4;
+                        stroke-dasharray: none;
+                        paint-order: stroke fill;
+                    }
+                </style>
+                <g id="layer1" x="0" y="0">
+                    <text id="text" x="10" y="80" font-family="Centaur" xml:space="preserve">
+                        <tspan id="tspan" x="10" y="80">Some Text</tspan>
+                    </text>
+                </g>
+            </svg>
+        </section>
+        <section id="output">
+            <canvas id="renderer" height="120"></canvas>
+        </section>
+        <main>
 </body>
 
 </html>

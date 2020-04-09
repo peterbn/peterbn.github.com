@@ -55,7 +55,8 @@ function prepareDownload() {
 }
 
 function updateFont() {
-    let font = document.getElementById('font').value;
+    let fonts = document.getElementById('font')
+    let font = fonts.value;
     let text = document.getElementById('text');
     text.setAttribute('font-family', font);
 

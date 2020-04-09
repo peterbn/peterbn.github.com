@@ -1,8 +1,52 @@
+html,
 body {
-    background-color: gray;
+    background-color: white;
+    padding: 0;
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
 }
 
 #preview {
     visibility: hidden;
     height: 0;
+}
+
+header {
+    background-color: white;
+    box-shadow: 0px 8px 8px 0px rgba(0, 0, 0, 0.75);
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+header h1 {
+    margin: 0;
+}
+
+#input {
+    padding: 20px;
+    background-color: white;
+}
+
+#font {
+    padding: 3px;
+    display: inline-block;
+}
+
+#source {
+    padding: 3px;
+    display: inline-block;
+    width: 400px;
+}
+
+#download {
+    display: inline-block;
+    padding: 6px;
+    text-decoration: unset;
+    color: black;
+    box-shadow: 0px 6px 4px 0px rgba(0, 0, 0, 0.75);
+}
+
+#output {
+    padding: 20px;
+    background-color: lightblue;
 }
