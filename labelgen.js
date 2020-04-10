@@ -26,16 +26,38 @@ function initTextRender(ctx) {
     let font = fonts.value;
 
     ctx.font = `80px ${font}`;
-    ctx.textBaseline = 'hanging';
+    ctx.textBaseline = 'bottom';
     ctx.strokeStyle = 'rgba(255,255,255,0.9)'
     ctx.lineWidth = 6;
     ctx.miterLimit = 4;
     ctx.fillStyle = '#000000'
 }
 
+/**
+ * Returns the bounding box width of the given text
+ * @param {2DRenceringContext} ctx Rendering Context
+ * @param {string} text Text to measure the width of on the given rendering context
+ */
+function textWidth(ctx, text) {
+    let dims = ctx.measureText(text);
+    let textWidth = Math.ceil(Math.abs(dims.actualBoundingBoxLeft) + Math.abs(dims.actualBoundingBoxRight))
+    return textWidth;
+}
+
+/**
+ * Measures the Bounding Box height of a line of text with the given context
+ * @param {2DRenderingContext} ctx Rendering context
+ */
+function fontLineHeight(ctx) {
+    const test = 'abcdefghijklmnopqrstuvxyzABCDEFGHIJKLMNOPQRSTUVXYZ'
+    let dims = ctx.measureText(test);
+    let textHeight = Math.ceil(Math.abs(dims.actualBoundingBoxAscent) + Math.abs(dims.actualBoundingBoxDescent));
+    return textHeight;
+}
+
 function renderCanvasText(text) {
     const TEXT_PADDING = 15;
-    const LINE_SKIP = 5;
+    const LINE_SKIP = 0;
 
     let lines = text.split('\n');
 
@@ -43,39 +65,27 @@ function renderCanvasText(text) {
     let ctx = renderer.getContext('2d');
     initTextRender(ctx);
 
+    let lineHeight = fontLineHeight(ctx);
     let maxTextWidth = 0;
-    let totalTextHeight = 0;
+    let totalTextHeight = lines.length * lineHeight + Math.max(0, lines.length - 1) * LINE_SKIP;
 
     for (let line of lines) {
-        let dims = ctx.measureText(line);
-        let textWidth = Math.ceil(Math.abs(dims.actualBoundingBoxLeft) + Math.abs(dims.actualBoundingBoxRight));
-        let textHeight = Math.ceil(Math.abs(dims.actualBoundingBoxAscent) + Math.abs(dims.actualBoundingBoxDescent));
-        maxTextWidth = Math.max(maxTextWidth, textWidth);
-        totalTextHeight = totalTextHeight + textHeight;
+        maxTextWidth = Math.max(maxTextWidth, textWidth(ctx, line));
     }
-
-    // add line skip to the text
-    totalTextHeight = totalTextHeight + Math.max(0, lines.length - 1) * LINE_SKIP;
 
     // resize the output renderer to fit the text
     renderer.setAttribute('width', maxTextWidth + 2 * TEXT_PADDING);
     renderer.setAttribute('height', totalTextHeight + 2 * TEXT_PADDING);
 
-    // re-init the context
+    // re-init the context after changing canvas size
     initTextRender(ctx);
 
-    let baselineoffset = TEXT_PADDING;
+    let baselineoffset = TEXT_PADDING + lineHeight;
     for (let line of lines) {
-        let dims = ctx.measureText(line);
-        ctx.strokeText(line, TEXT_PADDING + dims.actualBoundingBoxLeft, baselineoffset + dims.actualBoundingBoxAscent);
-        ctx.fillText(line, TEXT_PADDING + dims.actualBoundingBoxLeft, baselineoffset + dims.actualBoundingBoxAscent);
-
-        let textHeight = Math.ceil(Math.abs(dims.actualBoundingBoxAscent) + Math.abs(dims.actualBoundingBoxDescent));
-        baselineoffset += textHeight + LINE_SKIP;
+        ctx.strokeText(line, TEXT_PADDING, baselineoffset);
+        ctx.fillText(line, TEXT_PADDING, baselineoffset);
+        baselineoffset += lineHeight + LINE_SKIP;
     }
-
-
-
 }
 
 document.addEventListener("DOMContentLoaded", function() {
