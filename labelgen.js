@@ -27,9 +27,10 @@ function initTextRender(ctx) {
 
     ctx.font = `80px ${font}`;
     ctx.textBaseline = 'bottom';
-    ctx.strokeStyle = 'rgba(255,255,255,0.9)'
-    ctx.lineWidth = 6;
-    ctx.miterLimit = 4;
+    ctx.strokeStyle = 'rgba(255,255,255,1)'
+    ctx.lineWidth = 10;
+    ctx.lineJoin = 'round'
+    ctx.miterLimit = 3;
     ctx.fillStyle = '#000000'
 }
 
