@@ -9,6 +9,10 @@ function changeFont() {
     font.style.fontFamily = `'${fonts.value}'`;
 }
 
+function getAlignment() {
+    return document.querySelector('.radio-alignment:checked').value;
+}
+
 function prepareDownload() {
     let words = document.getElementById('source').value;
     let link = document.getElementById('download');
@@ -27,11 +31,12 @@ function initTextRender(ctx) {
 
     ctx.font = `80px ${font}`;
     ctx.textBaseline = 'bottom';
-    ctx.strokeStyle = 'rgba(255,255,255,1)'
+    ctx.textAlign = getAlignment();
+    ctx.strokeStyle = 'rgba(255,255,255,1)';
     ctx.lineWidth = 14;
-    ctx.lineJoin = 'round'
+    ctx.lineJoin = 'round';
     ctx.miterLimit = 3;
-    ctx.fillStyle = '#000000'
+    ctx.fillStyle = '#000000';
 }
 
 /**
@@ -58,7 +63,7 @@ function fontLineHeight(ctx) {
 
 function renderCanvasText(text) {
     const TEXT_PADDING = 15;
-    const LINE_SKIP = 0;
+    const LINE_SKIP = 5;
 
     let lines = text.split('\n');
 
@@ -82,9 +87,24 @@ function renderCanvasText(text) {
     initTextRender(ctx);
 
     let baselineoffset = TEXT_PADDING + lineHeight;
+
+    let textYPos = TEXT_PADDING;
+    switch (getAlignment()) {
+        case 'left':
+            // Intentionally left blank
+            break;
+        case 'center':
+            textYPos += maxTextWidth / 2;
+            break;
+        case 'right':
+            textYPos += maxTextWidth;
+            break;
+    }
+
     for (let line of lines) {
-        ctx.strokeText(line, TEXT_PADDING, baselineoffset);
-        ctx.fillText(line, TEXT_PADDING, baselineoffset);
+        line = line.trim();
+        ctx.strokeText(line, textYPos, baselineoffset);
+        ctx.fillText(line, textYPos, baselineoffset);
         baselineoffset += lineHeight + LINE_SKIP;
     }
 }
@@ -105,6 +125,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
         let words = document.getElementById('source').value;
         link.setAttribute('download', words + '.png');
+    });
+
+    let alignments = document.getElementsByName('alignment');
+    alignments.forEach(radio => {
+        radio.addEventListener('change', updatePreview);
     });
 
     changeFont(); // Init the font picker font.

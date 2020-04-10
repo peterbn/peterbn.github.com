@@ -3,6 +3,7 @@
 
 <head>
     <link href="https://fonts.googleapis.com/css2?family=Aclonica&family=Berkshire+Swash&family=Glass+Antiqua&family=Libre+Baskerville&family=Modern+Antiqua&family=Old+Standard+TT&family=Roboto&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="labelgen.css">
     <script src="labelgen.js"></script>
 </head>
@@ -33,6 +34,21 @@
                     <option value="Roboto" style="font-family: 'Roboto';">Roboto</option>
                     <option value="Uncial Antiqua" style="font-family: 'Uncial Antiqua';">Uncial Antiqua</option>
             </select>
+            <label>Alignment</label>
+            <p class="alignment">
+                <label class="radio-container">
+                        <input type="radio" name="alignment" class="radio-alignment" value="left">
+                        <span class="radio-label material-icons">format_align_left</span>
+                </label>
+                <label class="radio-container">
+                        <input type="radio" name="alignment"  class="radio-alignment" value="center" checked>
+                        <span class="radio-label material-icons">format_align_center</span>
+                </label>
+                <label class="radio-container">
+                        <input type="radio" name="alignment" class="radio-alignment" value="right">
+                        <span class="radio-label material-icons">format_align_right</span>
+                </label>
+            </p>
 
             <label for="source">Label text: </label>
             <textarea type="text" id="source" name="source" placeholder="Write your label here!"></textarea>
