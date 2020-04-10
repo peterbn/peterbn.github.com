@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Berkshire+Swash&family=Glass+Antiqua&family=Modern+Antiqua&family=Old+Standard+TT&family=Roboto&family=Uncial+Antiqua&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="labelgen.css">
     <script src="labelgen.js"></script>
 </head>
@@ -23,53 +23,21 @@
 
             <label for="font">Font: </label>
             <select id="font" name="font">
-                    <option value="Book Antiqua" style="font-family: 'Book Antiqua';">Book Antiqua</option>
-                  <option value="Centaur" selected style="font-family: Centaur;">Centaur</option>
-                
-                <option value="Comic Sans MS" style="font-family: 'Comic Sans MS';">Comic Sans MS</option>
-                <option value="Consolas" style="font-family: 'Consolas';">Consolas</option>
+                    <option value="Berkshire Swash" style="font-family: 'Berkshire Swash';" selected>Berkshire Swash</option>
+                    <option value="Modern Antiqua" style="font-family: 'Modern Antiqua';">Modern Antiqua</option>
+                    <option value="Glass Antiqua" style="font-family: 'Glass Antiqua';">Glass Antiqua</option>
+                    <option value="Old Standard TT" style="font-family: 'Old Standard TT';">Old Standard TT</option>
+                    <option value="Roboto" style="font-family: 'Roboto';">Roboto</option>
+                    <option value="Uncial Antiqua" style="font-family: 'Uncial Antiqua';">Uncial Antiqua</option>
             </select>
             <label for="source">Label text: </label>
             <input type="text" id="source" name="source" placeholder="Write your label here!">
             <a href="#" class="button" id="download" download="">Download!</a>
         </section>
-
-
-        <section id="preview">
-            <svg xmlns="http://www.w3.org/2000/svg" width="700" height="120" id="svg">
-                <style id="svgstyle">
-                    #text {
-                        font-style: normal;
-                        font-weight: normal;
-                        font-size: 80px;
-                        line-height: 125%;
-
-
-                        letter-spacing: 0px;
-                        word-spacing: 0px;
-                        fill: #000000;
-                        fill-opacity: 1;
-                        stroke: #ffffff;
-                        stroke-opacity: 0.8;
-                        stroke-width: 6;
-                        stroke-linecap: butt;
-                        stroke-linejoin: miter;
-                        stroke-miterlimit: 4;
-                        stroke-dasharray: none;
-                        paint-order: stroke fill;
-                    }
-                </style>
-                <g id="layer1" x="0" y="0">
-                    <text id="text" x="10" y="80" font-family="Centaur" xml:space="preserve">
-                        <tspan id="tspan" x="10" y="80">Some Text</tspan>
-                    </text>
-                </g>
-            </svg>
-        </section>
         <section id="output">
-            <canvas id="renderer" height="120"></canvas>
+            <canvas id="renderer" height="120" width="500"></canvas>
         </section>
-        <main>
+    </main>
 </body>
 
 </html>

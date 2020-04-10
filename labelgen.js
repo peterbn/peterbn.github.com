@@ -1,45 +1,6 @@
-function getTextWidth() {
-    let span = document.getElementById('tspan');
-    let textwidth = span.textLength.baseVal.value;
-    return textwidth;
-}
-
 function updatePreview() {
     let words = document.getElementById('source').value;
-    let span = document.getElementById('tspan');
-    span.textContent = words;
-
-    let textwidth = getTextWidth();
-    let svg = document.getElementById('svg');
-
-    svg.setAttribute("width", textwidth + 20); // text width + 10 margin
-    generatePng();
-}
-
-function generatePng() {
-    let svg = document.getElementById('svg');
-    let svgDimensions = svg.getBBox();
-
-    let svgString = new XMLSerializer().serializeToString(svg);
-
-    let canvas = document.getElementById("renderer");
-    let textwidth = getTextWidth();
-
-    canvas.setAttribute('width', textwidth + 20);
-
-    let ctx = canvas.getContext("2d");
-    let DOMURL = self.URL || self.webkitURL || self;
-    let img = new Image();
-    var svgUrl = new Blob([svgString], {
-        type: "image/svg+xml;charset=utf-8"
-    });
-
-    let url = DOMURL.createObjectURL(svgUrl);
-
-    img.onload = function() {
-        ctx.drawImage(img, 0, 0);
-    };
-    img.src = url;
+    renderCanvasText(words);
 
 }
 
@@ -54,19 +15,46 @@ function prepareDownload() {
     link.setAttribute('download', encodeURIComponent(words) + ".png");
 }
 
-function updateFont() {
+function initTextRender(ctx) {
+
     let fonts = document.getElementById('font')
     let font = fonts.value;
-    let text = document.getElementById('text');
-    text.setAttribute('font-family', font);
 
-    // setTimeout(updatePreview, 0);
-    updatePreview();
+    ctx.font = `80px ${font}`;
+    ctx.textBaseline = 'top';
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)'
+    ctx.lineWidth = 6;
+    ctx.miterLimit = 4;
+    ctx.fillStyle = '#000000'
+}
+
+function renderCanvasText(text) {
+    const TEXT_PADDING = 15;
+    let renderer = document.getElementById('renderer');
+    let ctx = renderer.getContext('2d');
+    initTextRender(ctx);
+    let dims = ctx.measureText(text);
+    let textWidth = Math.ceil(Math.abs(dims.actualBoundingBoxLeft) + Math.abs(dims.actualBoundingBoxRight));
+    let textHeight = Math.ceil(Math.abs(dims.actualBoundingBoxAscent) + Math.abs(dims.actualBoundingBoxDescent));
+
+    // resize the output renderer to fit the text
+    renderer.setAttribute('width', textWidth + 2 * TEXT_PADDING);
+    renderer.setAttribute('height', textHeight + 2 * TEXT_PADDING);
+
+    // re-init the context
+    initTextRender(ctx);
+
+    ctx.strokeText(text, TEXT_PADDING + dims.actualBoundingBoxLeft, TEXT_PADDING + dims.actualBoundingBoxAscent);
+    ctx.fillText(text, TEXT_PADDING + dims.actualBoundingBoxLeft, TEXT_PADDING + dims.actualBoundingBoxAscent);
+
 }
 
 document.addEventListener("DOMContentLoaded", function() {
     let source = document.getElementById('source');
     source.addEventListener('keyup', updatePreview);
+
+    let fonts = document.getElementById('font');
+    fonts.addEventListener('change', updatePreview);
 
     let link = document.getElementById('download');
     link.addEventListener('click', e => {
@@ -79,6 +67,4 @@ document.addEventListener("DOMContentLoaded", function() {
         link.setAttribute('download', words + '.png');
     });
 
-    let fonts = document.getElementById('font');
-    fonts.addEventListener('change', updateFont);
 });

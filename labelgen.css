@@ -6,11 +6,6 @@ body {
     font-family: 'Roboto', sans-serif;
 }
 
-#preview {
-    visibility: hidden;
-    height: 0;
-}
-
 header {
     background-color: white;
     box-shadow: 0px 8px 8px 0px rgba(0, 0, 0, 0.75);
@@ -48,5 +43,8 @@ header h1 {
 
 #output {
     padding: 20px;
-    background-color: lightblue;
+}
+
+#renderer {
+    background-image: url('canvasbg.svg');
 }
