@@ -1,7 +1,12 @@
 function updatePreview() {
     let words = document.getElementById('source').value;
     renderCanvasText(words);
+}
 
+function changeFont() {
+    updatePreview()
+    let fonts = document.getElementById('font');
+    font.style.fontFamily = `'${fonts.value}'`;
 }
 
 function prepareDownload() {
@@ -21,7 +26,7 @@ function initTextRender(ctx) {
     let font = fonts.value;
 
     ctx.font = `80px ${font}`;
-    ctx.textBaseline = 'top';
+    ctx.textBaseline = 'hanging';
     ctx.strokeStyle = 'rgba(255,255,255,0.9)'
     ctx.lineWidth = 6;
     ctx.miterLimit = 4;
@@ -30,22 +35,46 @@ function initTextRender(ctx) {
 
 function renderCanvasText(text) {
     const TEXT_PADDING = 15;
+    const LINE_SKIP = 5;
+
+    let lines = text.split('\n');
+
     let renderer = document.getElementById('renderer');
     let ctx = renderer.getContext('2d');
     initTextRender(ctx);
-    let dims = ctx.measureText(text);
-    let textWidth = Math.ceil(Math.abs(dims.actualBoundingBoxLeft) + Math.abs(dims.actualBoundingBoxRight));
-    let textHeight = Math.ceil(Math.abs(dims.actualBoundingBoxAscent) + Math.abs(dims.actualBoundingBoxDescent));
+
+    let maxTextWidth = 0;
+    let totalTextHeight = 0;
+
+    for (let line of lines) {
+        let dims = ctx.measureText(line);
+        let textWidth = Math.ceil(Math.abs(dims.actualBoundingBoxLeft) + Math.abs(dims.actualBoundingBoxRight));
+        let textHeight = Math.ceil(Math.abs(dims.actualBoundingBoxAscent) + Math.abs(dims.actualBoundingBoxDescent));
+        maxTextWidth = Math.max(maxTextWidth, textWidth);
+        totalTextHeight = totalTextHeight + textHeight;
+    }
+
+    // add line skip to the text
+    totalTextHeight = totalTextHeight + Math.max(0, lines.length - 1) * LINE_SKIP;
 
     // resize the output renderer to fit the text
-    renderer.setAttribute('width', textWidth + 2 * TEXT_PADDING);
-    renderer.setAttribute('height', textHeight + 2 * TEXT_PADDING);
+    renderer.setAttribute('width', maxTextWidth + 2 * TEXT_PADDING);
+    renderer.setAttribute('height', totalTextHeight + 2 * TEXT_PADDING);
 
     // re-init the context
     initTextRender(ctx);
 
-    ctx.strokeText(text, TEXT_PADDING + dims.actualBoundingBoxLeft, TEXT_PADDING + dims.actualBoundingBoxAscent);
-    ctx.fillText(text, TEXT_PADDING + dims.actualBoundingBoxLeft, TEXT_PADDING + dims.actualBoundingBoxAscent);
+    let baselineoffset = TEXT_PADDING;
+    for (let line of lines) {
+        let dims = ctx.measureText(line);
+        ctx.strokeText(line, TEXT_PADDING + dims.actualBoundingBoxLeft, baselineoffset + dims.actualBoundingBoxAscent);
+        ctx.fillText(line, TEXT_PADDING + dims.actualBoundingBoxLeft, baselineoffset + dims.actualBoundingBoxAscent);
+
+        let textHeight = Math.ceil(Math.abs(dims.actualBoundingBoxAscent) + Math.abs(dims.actualBoundingBoxDescent));
+        baselineoffset += textHeight + LINE_SKIP;
+    }
+
+
 
 }
 
@@ -54,7 +83,7 @@ document.addEventListener("DOMContentLoaded", function() {
     source.addEventListener('keyup', updatePreview);
 
     let fonts = document.getElementById('font');
-    fonts.addEventListener('change', updatePreview);
+    fonts.addEventListener('change', changeFont);
 
     let link = document.getElementById('download');
     link.addEventListener('click', e => {
@@ -66,5 +95,7 @@ document.addEventListener("DOMContentLoaded", function() {
         let words = document.getElementById('source').value;
         link.setAttribute('download', words + '.png');
     });
+
+    changeFont(); // Init the font picker font.
 
 });

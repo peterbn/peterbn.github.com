@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <link href="https://fonts.googleapis.com/css2?family=Berkshire+Swash&family=Glass+Antiqua&family=Modern+Antiqua&family=Old+Standard+TT&family=Roboto&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Aclonica&family=Berkshire+Swash&family=Glass+Antiqua&family=Modern+Antiqua&family=Old+Standard+TT&family=Roboto&family=Uncial+Antiqua&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="labelgen.css">
     <script src="labelgen.js"></script>
 </head>
@@ -12,7 +12,7 @@
         <h1>Roll20 Map Label Generator</h1>
     </header>
     <main>
-        <section id="input">
+        <section id="description">
             <h2>Description</h2>
             <p>
                 This tool will generate transparent PNGs of text with a semi-transparent white outline, perfect for putting on your Roll20 maps.
@@ -20,19 +20,22 @@
             <p>
                 Simply type your desired label text in the input field below and click the "Download" button to get your labels.
             </p>
-
+        </section>
+        <section id="input">
             <label for="font">Font: </label>
             <select id="font" name="font">
-                    <option value="Berkshire Swash" style="font-family: 'Berkshire Swash';" selected>Berkshire Swash</option>
+                    <option value="Aclonica" style="font-family: 'Aclonica';" >Aclonica</option>
+                    <option value="Berkshire Swash" style="font-family: 'Berkshire Swash';" >Berkshire Swash</option>
                     <option value="Modern Antiqua" style="font-family: 'Modern Antiqua';">Modern Antiqua</option>
                     <option value="Glass Antiqua" style="font-family: 'Glass Antiqua';">Glass Antiqua</option>
                     <option value="Old Standard TT" style="font-family: 'Old Standard TT';">Old Standard TT</option>
                     <option value="Roboto" style="font-family: 'Roboto';">Roboto</option>
                     <option value="Uncial Antiqua" style="font-family: 'Uncial Antiqua';">Uncial Antiqua</option>
             </select>
+
             <label for="source">Label text: </label>
-            <input type="text" id="source" name="source" placeholder="Write your label here!">
-            <a href="#" class="button" id="download" download="">Download!</a>
+            <textarea type="text" id="source" name="source" placeholder="Write your label here!"></textarea>
+            <a href="#" class="button pure-material-button-contained" id="download" download="">Download!</a>
         </section>
         <section id="output">
             <canvas id="renderer" height="120" width="500"></canvas>
