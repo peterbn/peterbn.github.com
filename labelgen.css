@@ -17,6 +17,30 @@ header h1 {
     margin: 0;
 }
 
+@media (min-width: 1400px) {
+    main {
+        display: grid;
+        grid-template-columns: auto auto;
+        grid-template-rows: 180px auto;
+    }
+    main #description {
+        grid-column: 1;
+        grid-row: 1;
+    }
+    main #input {
+        grid-column: 1;
+        grid-row: 2;
+        align-self: start;
+    }
+    main #output {
+        grid-column: 2;
+        grid-row-start: 1;
+        grid-row-end: 3;
+        align-self: start;
+        justify-self: center;
+    }
+}
+
 #input,
 #description {
     padding: 20px;
@@ -50,7 +74,6 @@ header h1 {
 #input {
     display: grid;
     grid-template-columns: 150px 400px;
-    grid-template-rows: repeat(auto);
     row-gap: 5px;
 }
 
