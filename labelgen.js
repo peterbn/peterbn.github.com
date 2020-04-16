@@ -1,6 +1,9 @@
+const TEXT_PADDING = 15;
+const LINE_SKIP = 5;
+
 function updatePreview() {
-    let words = document.getElementById('source').value;
-    renderCanvasText(words);
+
+    renderCanvasText();
 }
 
 function changeFont() {
@@ -9,8 +12,23 @@ function changeFont() {
     font.style.fontFamily = `'${fonts.value}'`;
 }
 
+function getText() {
+    let text = document.getElementById('source').value;
+    let lines = text.split('\n');
+    return lines.map(line => line.trim());
+}
+
 function getAlignment() {
     return document.querySelector('.radio-alignment:checked').value;
+}
+
+function getBackground() {
+    return document.querySelector('.radio-background:checked').value;
+}
+
+function getFont() {
+    let fonts = document.getElementById('font');
+    return fonts.value
 }
 
 function prepareDownload() {
@@ -25,10 +43,7 @@ function prepareDownload() {
 }
 
 function initTextRender(ctx) {
-
-    let fonts = document.getElementById('font')
-    let font = fonts.value;
-
+    let font = getFont();
     ctx.font = `80px ${font}`;
     ctx.textBaseline = 'bottom';
     ctx.textAlign = getAlignment();
@@ -41,13 +56,23 @@ function initTextRender(ctx) {
 
 /**
  * Returns the bounding box width of the given text
- * @param {2DRenceringContext} ctx Rendering Context
- * @param {string} text Text to measure the width of on the given rendering context
+ * @param {string} line Text to measure the width of on the given rendering context
  */
-function textWidth(ctx, text) {
-    let dims = ctx.measureText(text);
-    let textWidth = Math.ceil(Math.abs(dims.actualBoundingBoxLeft) + Math.abs(dims.actualBoundingBoxRight))
-    return textWidth;
+function textWidth(line) {
+    const svgtext = document.getElementById('svgtext');
+    svgtext.setAttribute('font-family', getFont())
+    svgtext.textContent = line;
+    let bbox = svgtext.getBBox();
+    let textLength = Math.ceil(svgtext.textLength.baseVal.value);
+
+    let baseX = parseInt(svgtext.getAttribute('x'));
+
+    let overflow = bbox.width - textLength;
+
+    let leadX = Math.abs(baseX - bbox.x);
+    let trailX = overflow - leadX;
+
+    return { bbWidth: bbox.width, textLength: textLength, leadX: leadX, trailX: trailX };
 }
 
 /**
@@ -61,52 +86,113 @@ function fontLineHeight(ctx) {
     return textHeight;
 }
 
-function renderCanvasText(text) {
-    const TEXT_PADDING = 15;
-    const LINE_SKIP = 5;
+function textBoundingBox(ctx, lines) {
+    let lineHeight = fontLineHeight(ctx);
+    let maxTextWidth = 0;
+    let totalTextHeight = lines.length * lineHeight + lines.length * LINE_SKIP;
+    let maxLeadX = 0;
+    let maxTrailX = 0;
 
-    let lines = text.split('\n');
+    for (let line of lines) {
+        let widthObj = textWidth(line);
+        maxTextWidth = Math.max(maxTextWidth, widthObj.textLength);
+        maxLeadX = Math.max(maxLeadX, widthObj.leadX);
+        maxTrailX = Math.max(maxTrailX, widthObj.trailX);
+    }
+    return { width: maxTextWidth + maxLeadX + maxTrailX, height: totalTextHeight };
+}
 
+function getRenderingContext() {
     let renderer = document.getElementById('renderer');
     let ctx = renderer.getContext('2d');
     initTextRender(ctx);
+    return ctx;
+}
 
-    let lineHeight = fontLineHeight(ctx);
-    let maxTextWidth = 0;
-    let totalTextHeight = lines.length * lineHeight + Math.max(0, lines.length - 1) * LINE_SKIP;
-
-    for (let line of lines) {
-        maxTextWidth = Math.max(maxTextWidth, textWidth(ctx, line));
-    }
-
+function resizeCanvas(width, height, padding) {
+    let renderer = document.getElementById('renderer');
     // resize the output renderer to fit the text
-    renderer.setAttribute('width', maxTextWidth + 2 * TEXT_PADDING);
-    renderer.setAttribute('height', totalTextHeight + 2 * TEXT_PADDING);
+    renderer.setAttribute('width', width + padding);
+    renderer.setAttribute('height', height + padding);
+    return getRenderingContext();
+}
 
-    // re-init the context after changing canvas size
+function renderText(ctx, lines, ctxRenderFun) {
+    ctx.save();
     initTextRender(ctx);
+    let lineHeight = fontLineHeight(ctx);
+    let baselineoffset = lineHeight;
 
-    let baselineoffset = TEXT_PADDING + lineHeight;
-
-    let textYPos = TEXT_PADDING;
-    switch (getAlignment()) {
-        case 'left':
-            // Intentionally left blank
-            break;
-        case 'center':
-            textYPos += maxTextWidth / 2;
-            break;
-        case 'right':
-            textYPos += maxTextWidth;
-            break;
-    }
+    let textYPos = getTextYPos(ctx, lines);
 
     for (let line of lines) {
-        line = line.trim();
-        ctx.strokeText(line, textYPos, baselineoffset);
-        ctx.fillText(line, textYPos, baselineoffset);
+        ctxRenderFun.call(ctx, line, textYPos, baselineoffset);
         baselineoffset += lineHeight + LINE_SKIP;
     }
+    ctx.restore();
+}
+
+function renderBackgroundRectangle(ctx, lines, padding) {
+    let textBB = textBoundingBox(ctx, lines);
+    ctx.save();
+    ctx.strokeStyle = 'green';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(0, 0, textBB.width, textBB.height);
+    ctx.restore();
+}
+
+function measureTextSideBearing(lines) {
+
+    let leadX = 0;
+    let trailX = 0;
+    for (line of lines) {
+        let widthObj = textWidth(line);
+        leadX = Math.max(leadX, widthObj.leadX);
+        trailX = Math.max(trailX, widthObj.trailX);
+    }
+    return { leadX: leadX, trailX: trailX };
+}
+
+function getTextYPos(ctx, lines) {
+    let textBB = textBoundingBox(ctx, lines);
+    let sideBearing = measureTextSideBearing(lines)
+    let textYPos = 0;
+    switch (getAlignment()) {
+        case 'left':
+            textYPos = sideBearing.leadX;
+            break;
+        case 'center':
+            textYPos = (textBB.width + sideBearing.leadX - sideBearing.trailX) / 2;
+            break;
+        case 'right':
+            textYPos = textBB.width - sideBearing.trailX;
+            break;
+    }
+    return textYPos;
+}
+
+
+function renderCanvasText() {
+    let lines = getText();
+
+    let ctx = getRenderingContext();
+
+    let background = getBackground();
+    let padding = TEXT_PADDING;
+    if (background === 'circle' || background === 'rectangle') {
+        padding += 30;
+    }
+
+    let textBB = textBoundingBox(ctx, lines);
+
+    ctx = resizeCanvas(textBB.width, textBB.height, 2 * padding);
+
+    // Adjust all drawing commands
+    ctx.translate(padding, padding);
+    // Move all drawing commands to take padding into account
+    // renderBackgroundRectangle(ctx, lines);
+    renderText(ctx, lines, CanvasRenderingContext2D.prototype.strokeText);
+    renderText(ctx, lines, CanvasRenderingContext2D.prototype.fillText);
 }
 
 document.addEventListener("DOMContentLoaded", function() {
