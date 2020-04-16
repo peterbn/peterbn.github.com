@@ -50,13 +50,43 @@
                 </label>
             </p>
 
+            <label>Background</label>
+            <p class="background">
+                <label class="radio-container">
+                        <input type="radio" name="background" class="radio-background" value="outline" checked>
+                        <span class="radio-label">Outline</span>
+                </label>
+                <label class="radio-container">
+                        <input type="radio" name="background"  class="radio-background" value="circle" >
+                        <span class="radio-label">Circle</span>
+                </label>
+                <label class="radio-container">
+                        <input type="radio" name="background" class="radio-background" value="rectangle">
+                        <span class="radio-label">rectangle</span>
+                </label>
+            </p>
+
             <label for="source">Label text: </label>
             <textarea type="text" id="source" name="source" placeholder="Write your label here!"></textarea>
             <a href="#" class="button pure-material-button-contained" id="download" download="">Download!</a>
         </section>
         <section id="output">
             <canvas id="renderer" height="120" width="500"></canvas>
+            <div id="measurer" style="visibility: hidden;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" id="svg">
+                <style id="svgstyle">
+      #svgtext {  
+        font-style:normal;
+        font-weight:normal;
         font-size:80px;
+      }
+                </style>
+              <g id="layer1" x="0" y="0">
+                <text id="svgtext" x="10" y="80" font-family="Libre Baskerville" xml:space="preserve"></text>
+              </g>
+            </svg>
+            </div>
+
         </section>
     </main>
 </body>
