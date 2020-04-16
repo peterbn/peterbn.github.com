@@ -1,5 +1,6 @@
-const TEXT_PADDING = 15;
-const LINE_SKIP = 5;
+const TEXT_PADDING = 16;
+const LINE_SKIP = 6;
+const BACKGROUND_STROKE_WIDTH = 16;
 
 function updatePreview() {
 
@@ -48,7 +49,7 @@ function initTextRender(ctx) {
     ctx.textBaseline = 'bottom';
     ctx.textAlign = getAlignment();
     ctx.strokeStyle = 'rgba(255,255,255,1)';
-    ctx.lineWidth = 14;
+    ctx.lineWidth = BACKGROUND_STROKE_WIDTH;
     ctx.lineJoin = 'round';
     ctx.miterLimit = 3;
     ctx.fillStyle = '#000000';
@@ -63,7 +64,7 @@ function textWidth(line) {
     svgtext.setAttribute('font-family', getFont())
     svgtext.textContent = line;
     let bbox = svgtext.getBBox();
-    let textLength = Math.ceil(svgtext.textLength.baseVal.value);
+    let textLength = svgtext.textLength.baseVal.value;
 
     let baseX = parseInt(svgtext.getAttribute('x'));
 
@@ -99,7 +100,11 @@ function textBoundingBox(ctx, lines) {
         maxLeadX = Math.max(maxLeadX, widthObj.leadX);
         maxTrailX = Math.max(maxTrailX, widthObj.trailX);
     }
-    return { width: maxTextWidth + maxLeadX + maxTrailX, height: totalTextHeight };
+    let bbWidth = maxTextWidth + maxLeadX + maxTrailX
+    return {
+        width: bbWidth,
+        height: totalTextHeight
+    };
 }
 
 function getRenderingContext() {
@@ -109,11 +114,11 @@ function getRenderingContext() {
     return ctx;
 }
 
-function resizeCanvas(width, height, padding) {
+function resizeCanvas(width, height) {
     let renderer = document.getElementById('renderer');
     // resize the output renderer to fit the text
-    renderer.setAttribute('width', width + padding);
-    renderer.setAttribute('height', height + padding);
+    renderer.setAttribute('width', width);
+    renderer.setAttribute('height', height);
     return getRenderingContext();
 }
 
@@ -132,12 +137,46 @@ function renderText(ctx, lines, ctxRenderFun) {
     ctx.restore();
 }
 
-function renderBackgroundRectangle(ctx, lines, padding) {
-    let textBB = textBoundingBox(ctx, lines);
+function renderTextBBox(ctx, textBB) {
     ctx.save();
     ctx.strokeStyle = 'green';
     ctx.lineWidth = 1;
     ctx.strokeRect(0, 0, textBB.width, textBB.height);
+    ctx.restore();
+}
+
+function renderBackgroundRectangle(ctx, textBB, padding) {
+    ctx.save();
+    ctx.strokeStyle = '#000000aa';
+    ctx.lineWidth = BACKGROUND_STROKE_WIDTH;
+
+    ctx.fillStyle = 'white'
+    ctx.lineJoin = 'miter';
+
+    ctx.strokeRect(-1 * padding, -1 * padding, textBB.width + 2 * padding, textBB.height + 2 * padding);
+    ctx.fillRect(-1 * padding, -1 * padding, textBB.width + 2 * padding, textBB.height + 2 * padding);
+    ctx.restore();
+}
+
+function renderBackgroundCircle(ctx, textBB, padding) {
+    ctx.save();
+    ctx.strokeStyle = '#000000aa';
+    ctx.lineWidth = BACKGROUND_STROKE_WIDTH;
+
+    ctx.fillStyle = 'white'
+    ctx.lineJoin = 'miter';
+
+    let x = textBB.width / 2;
+    let y = textBB.height / 2;
+
+    let radius = 0.5 * Math.sqrt(Math.pow(textBB.width, 2) + Math.pow(textBB.height, 2)) + padding;
+
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, 2 * Math.PI);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, 2 * Math.PI);
+    ctx.fill();
     ctx.restore();
 }
 
@@ -178,20 +217,45 @@ function renderCanvasText() {
     let ctx = getRenderingContext();
 
     let background = getBackground();
-    let padding = TEXT_PADDING;
-    if (background === 'circle' || background === 'rectangle') {
-        padding += 30;
-    }
+    let paddingX = BACKGROUND_STROKE_WIDTH / 2;
+    let paddingY = BACKGROUND_STROKE_WIDTH / 2;
 
     let textBB = textBoundingBox(ctx, lines);
 
-    ctx = resizeCanvas(textBB.width, textBB.height, 2 * padding);
+    // Figure out the X and Y padding depending on the background type
+    switch (background) {
+        case 'rectangle':
+            paddingX += TEXT_PADDING;
+            paddingY += TEXT_PADDING;
+            break;
+        case 'circle':
+            let diam = Math.sqrt(Math.pow(textBB.width, 2) + Math.pow(textBB.height, 2));
+            paddingX += TEXT_PADDING + (diam - textBB.width) / 2;
+            paddingY += TEXT_PADDING + (diam - textBB.height) / 2;
+            break;
+    }
 
-    // Adjust all drawing commands
-    ctx.translate(padding, padding);
+    ctx = resizeCanvas(textBB.width + 2 * paddingX, textBB.height + 2 * paddingY);
+
     // Move all drawing commands to take padding into account
-    // renderBackgroundRectangle(ctx, lines);
-    renderText(ctx, lines, CanvasRenderingContext2D.prototype.strokeText);
+    ctx.translate(paddingX, paddingY);
+
+    // Draw the text background
+    switch (background) {
+        case 'outline':
+            renderText(ctx, lines, CanvasRenderingContext2D.prototype.strokeText);
+            break;
+        case 'circle':
+            renderBackgroundCircle(ctx, textBB, TEXT_PADDING);
+            break;
+        case 'rectangle':
+            renderBackgroundRectangle(ctx, textBB, TEXT_PADDING);
+            break;
+    }
+
+    // renderTextBBox(ctx, textBB); // Useful for debugging, draws the BBox of the text
+
+    // Render the desired label
     renderText(ctx, lines, CanvasRenderingContext2D.prototype.fillText);
 }
 
@@ -215,6 +279,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
     let alignments = document.getElementsByName('alignment');
     alignments.forEach(radio => {
+        radio.addEventListener('change', updatePreview);
+    });
+
+    let backgrounds = document.getElementsByName('background');
+    backgrounds.forEach(radio => {
         radio.addEventListener('change', updatePreview);
     });
 
