@@ -1,276 +1,366 @@
 const TEXT_PADDING = 16;
 const LINE_SKIP = 6;
 const BACKGROUND_STROKE_WIDTH = 16;
-
-function updatePreview() {
-
-    renderCanvasText();
-}
-
-function changeFont() {
-    updatePreview()
-    let fonts = document.getElementById('font');
-    font.style.fontFamily = `'${fonts.value}'`;
-}
-
-function getText() {
-    let text = document.getElementById('source').value;
-    let lines = text.split('\n');
-    return lines.map(line => line.trim());
-}
-
-function getAlignment() {
-    return document.querySelector('.radio-alignment:checked').value;
-}
-
-function getBackground() {
-    return document.querySelector('.radio-background:checked').value;
-}
-
-function getFont() {
-    let fonts = document.getElementById('font');
-    return fonts.value
-}
-
-function prepareDownload() {
-    let words = document.getElementById('source').value;
-    let link = document.getElementById('download');
-
-    let canvas = document.getElementById("renderer");
-    var dataURL = canvas.toDataURL('image/png');
-
-    link.setAttribute('href', dataURL);
-    link.setAttribute('download', encodeURIComponent(words) + ".png");
-}
-
-function initTextRender(ctx) {
-    let font = getFont();
-    ctx.font = `80px ${font}`;
-    ctx.textBaseline = 'bottom';
-    ctx.textAlign = getAlignment();
-    ctx.strokeStyle = 'rgba(255,255,255,1)';
-    ctx.lineWidth = BACKGROUND_STROKE_WIDTH;
-    ctx.lineJoin = 'round';
-    ctx.miterLimit = 3;
-    ctx.fillStyle = '#000000';
-}
+const FONT_SIZE = '80px';
 
 /**
- * Returns the bounding box width of the given text
- * @param {string} line Text to measure the width of on the given rendering context
+ * Helper class to correctly measure text before rendering, using an SVG element
  */
-function textWidth(line) {
-    const svgtext = document.getElementById('svgtext');
-    svgtext.setAttribute('font-family', getFont())
-    svgtext.textContent = line;
-    let bbox = svgtext.getBBox();
-    let textLength = svgtext.textLength.baseVal.value;
+class TextMeasurer {
+    constructor() {
+        const SVG_NS = "http://www.w3.org/2000/svg";
 
-    let baseX = parseInt(svgtext.getAttribute('x'));
+        this.svg = document.createElementNS(SVG_NS, 'svg');
 
-    let overflow = bbox.width - textLength;
+        this.svg.style.visibility = 'hidden';
+        this.svg.setAttribute('xmlns', SVG_NS)
+        this.svg.setAttribute('width', 0);
+        this.svg.setAttribute('height', 0);
 
-    let leadX = Math.abs(baseX - bbox.x);
-    let trailX = overflow - leadX;
+        this.svgtext = document.createElementNS(SVG_NS, 'text');
+        this.svg.appendChild(this.svgtext);
+        this.svgtext.setAttribute('x', 0);
+        this.svgtext.setAttribute('y', 0);
 
-    return { bbWidth: bbox.width, textLength: textLength, leadX: leadX, trailX: trailX };
-}
-
-/**
- * Measures the Bounding Box height of a line of text with the given context
- * @param {2DRenderingContext} ctx Rendering context
- */
-function fontLineHeight(ctx) {
-    const test = 'abcdefghijklmnopqrstuvxyzABCDEFGHIJKLMNOPQRSTUVXYZ'
-    let dims = ctx.measureText(test);
-    let textHeight = Math.ceil(Math.abs(dims.actualBoundingBoxAscent) + Math.abs(dims.actualBoundingBoxDescent));
-    return textHeight;
-}
-
-function textBoundingBox(ctx, lines) {
-    let lineHeight = fontLineHeight(ctx);
-    let maxTextWidth = 0;
-    let totalTextHeight = lines.length * lineHeight + lines.length * LINE_SKIP;
-    let maxLeadX = 0;
-    let maxTrailX = 0;
-
-    for (let line of lines) {
-        let widthObj = textWidth(line);
-        maxTextWidth = Math.max(maxTextWidth, widthObj.textLength);
-        maxLeadX = Math.max(maxLeadX, widthObj.leadX);
-        maxTrailX = Math.max(maxTrailX, widthObj.trailX);
+        document.querySelector('body').appendChild(this.svg);
     }
-    let bbWidth = maxTextWidth + maxLeadX + maxTrailX
-    return {
-        width: bbWidth,
-        height: totalTextHeight
+
+    /**
+     * Measure a single line of text, including the bounding box, inner size and lead and trail X
+     * @param {string} text Single line of text
+     * @param {string} fontFamily Name of font family
+     * @param {string} fontSize Font size including units
+     */
+    measureText(text, fontFamily, fontSize) {
+        this.svgtext.setAttribute('font-family', fontFamily);
+        this.svgtext.setAttribute('font-size', fontSize);
+        this.svgtext.textContent = text;
+
+        let bbox = this.svgtext.getBBox();
+        let textLength = this.svgtext.textLength.baseVal.value;
+
+        let baseX = parseInt(this.svgtext.getAttribute('x'));
+
+        let overflow = bbox.width - textLength;
+
+        let leadX = Math.abs(baseX - bbox.x);
+        let trailX = overflow - leadX;
+
+        return {
+            bbWidth: bbox.width,
+            textLength: textLength,
+            leadX: leadX,
+            trailX: trailX,
+            bbHeight: bbox.height
+        };
+    }
+
+    /**
+     * Measures the Bounding Box height of a line of text with the given font
+     * @param {string} fontFamily Rendering context
+     * @param {string} fontSize font size with unit
+     */
+    fontLineHeight(fontFamily, fontSize) {
+        const test = 'abcdefghijklmnopqrstuvxyzABCDEFGHIJKLMNOPQRSTUVXYZ'
+        let dims = this.measureText(test, fontFamily, fontSize);
+        return dims.bbHeight;
+    }
+
+    /**
+     * Measures the full bounding box of text rendered on the canvas, 
+     * as well as any additional dimensions needed for correct rendering.
+     * @param {Array<string>} lines List of strings to measure
+     * @param {string} fontFamily Name of font family
+     * @param {string} fontSize Font size with units
+     * @param {string} alignment text alignment
+     */
+    textDimensions(lines, fontFamily, fontSize, alignment) {
+        let lineHeight = this.fontLineHeight(fontFamily, fontSize);
+        let totalTextHeight = lines.length * lineHeight + lines.length * LINE_SKIP;
+
+        let maxTextWidth = 0;
+        let maxLeadX = 0;
+        let maxTrailX = 0;
+        for (let line of lines) {
+            let widthObj = this.measureText(line, fontFamily, fontSize);
+            maxTextWidth = Math.max(maxTextWidth, widthObj.textLength);
+            maxLeadX = Math.max(maxLeadX, widthObj.leadX);
+            maxTrailX = Math.max(maxTrailX, widthObj.trailX);
+        }
+        let bbWidth = maxTextWidth + maxLeadX + maxTrailX;
+
+        let textYPos = 0;
+        switch (alignment) {
+            case 'left':
+                textYPos = maxLeadX;
+                break;
+            case 'center':
+                textYPos = (bbWidth + maxLeadX - maxTrailX) / 2;
+                break;
+            case 'right':
+                textYPos = bbWidth - maxTrailX;
+                break;
+        }
+
+        return {
+            width: bbWidth,
+            height: totalTextHeight,
+            textLength: maxTextWidth,
+            leadX: maxLeadX,
+            trailX: maxTrailX,
+            lineHeight: lineHeight,
+            lineSkip: LINE_SKIP,
+            textYPos: textYPos
+        };
+    }
+}
+
+/**
+ * Wrapper class to control rendering on the canvas.
+ */
+class Renderer {
+    constructor(measurer) {
+        this.canvas = document.getElementById('renderer');
+        this.measurer = measurer;
+    }
+
+    /**
+     * Get a data url of the image as PNG
+     */
+    toDataURL() {
+        return this.canvas.toDataURL('image/png');
+    }
+
+    /**
+     * Resize the renderer. This resets any context
+     * @param {number} width new width in px
+     * @param {number} height new height in px
+     */
+    resize(width, height) {
+        this.canvas.setAttribute('width', width);
+        this.canvas.setAttribute('height', height);
+    }
+
+    /**
+     * Run the rendering function with the context, after having configured
+     * it with the ctxconfig function. 
+     * Context state is restored after this function call.
+     * @param {function} ctxconfig Context setup function getting the context as arg
+     * @param {function} rendering Rendering function getting the context as arg
+     */
+    withCtx(ctxconfig, rendering) {
+        const ctx = renderer.getContext('2d');
+        ctx.save();
+        ctxconfig(ctx);
+        rendering(ctx);
+        ctx.restore();
+    }
+
+    /**
+     * Render text on the canvas.
+     * @param {Array} lines List of text lines to render
+     * @param {string} font Font family
+     * @param {string} fontSize Font size including units
+     * @param {string} alignment desired text alignment
+     * @param {Object} textDim Text dimensions object from measurer
+     * @param {function} ctxRenderFun Reference to either strokeText or fillText on the CanvasRenderingContext2D object prototype
+     */
+    _renderText(lines, font, fontSize, alignment, textDim, ctxRenderFun) {
+        const ctxconfig = ctx => {
+            ctx.font = `${fontSize} ${font}`;
+            ctx.textBaseline = 'bottom';
+            ctx.textAlign = alignment;
+            ctx.strokeStyle = 'rgba(255,255,255,1)';
+            ctx.lineWidth = BACKGROUND_STROKE_WIDTH;
+            ctx.lineJoin = 'round';
+            ctx.miterLimit = 3;
+            ctx.fillStyle = '#000000';
+        };
+
+        this.withCtx(ctxconfig, ctx => {
+            let baselineoffset = textDim.lineHeight;
+
+            for (let line of lines) {
+                ctxRenderFun.call(ctx, line, textDim.textYPos, baselineoffset);
+                baselineoffset += textDim.lineHeight + textDim.lineSkip;
+            }
+        });
+    }
+
+    strokeText(lines, font, fontSize, alignment, textDim) {
+        this._renderText(lines, font, fontSize, alignment, textDim, CanvasRenderingContext2D.prototype.strokeText);
+    }
+
+    fillText(lines, font, fontSize, alignment, textDim) {
+        this._renderText(lines, font, fontSize, alignment, textDim, CanvasRenderingContext2D.prototype.fillText);
+    }
+
+    renderTextBBox(textBB) {
+        const ctxconfig = ctx => {
+            ctx.strokeStyle = 'green';
+            ctx.lineWidth = 1;
+        };
+        this.withCtx(ctxconfig, ctx => {
+            ctx.strokeRect(0, 0, textBB.width, textBB.height);
+        });
+    }
+
+    renderBackgroundRectangle(textBB, padding) {
+        const ctxconfig = ctx => {
+            ctx.strokeStyle = '#000000aa';
+            ctx.lineWidth = BACKGROUND_STROKE_WIDTH;
+            ctx.fillStyle = 'white'
+            ctx.lineJoin = 'miter';
+        };
+        this.withCtx(ctxconfig, ctx => {
+            ctx.strokeRect(-1 * padding, -1 * padding, textBB.width + 2 * padding, textBB.height + 2 * padding);
+            ctx.fillRect(-1 * padding, -1 * padding, textBB.width + 2 * padding, textBB.height + 2 * padding);
+        });
+    }
+
+    renderBackgroundCircle(textBB, padding) {
+        const ctxconfig = ctx => {
+            ctx.strokeStyle = '#000000aa';
+            ctx.lineWidth = BACKGROUND_STROKE_WIDTH;
+            ctx.fillStyle = 'white'
+            ctx.lineJoin = 'miter';
+        }
+
+        this.withCtx(ctxconfig, ctx => {
+            let x = textBB.width / 2;
+            let y = textBB.height / 2;
+
+            let radius = 0.5 * Math.sqrt(Math.pow(textBB.width, 2) + Math.pow(textBB.height, 2)) + padding;
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, 2 * Math.PI);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, 2 * Math.PI);
+            ctx.fill();
+        });
+    }
+
+    _getPadding(textDim, background) {
+        // The base padding is the outside part of the stroke, i.e. half width
+        let paddingX = BACKGROUND_STROKE_WIDTH / 2;
+        let paddingY = BACKGROUND_STROKE_WIDTH / 2;
+
+
+        // Figure out the X and Y padding depending on the background type
+        switch (background) {
+            case 'rectangle':
+                paddingX += TEXT_PADDING;
+                paddingY += TEXT_PADDING;
+                break;
+            case 'circle':
+                let diam = Math.sqrt(Math.pow(textDim.width, 2) + Math.pow(textDim.height, 2));
+                paddingX += TEXT_PADDING + (diam - textDim.width) / 2;
+                paddingY += TEXT_PADDING + (diam - textDim.height) / 2;
+                break;
+        }
+        return { x: paddingX, y: paddingY };
+    }
+
+    /**
+     * Render the desired label on the canvas.
+     * @param {Array} lines text lines to render
+     * @param {string} font Font family name
+     * @param {string} fontSize font size with unit
+     * @param {string} alignment text alignment
+     * @param {string} background background type to render
+     */
+    renderLabel(lines, font, fontSize, alignment, background) {
+        // Measure the text and required padding
+        const textDim = this.measurer.textDimensions(lines, font, fontSize, alignment);
+        const padding = this._getPadding(textDim, background);
+
+        // Resize the canvas to fit the final image exactly
+        this.resize(textDim.width + 2 * padding.x, textDim.height + 2 * padding.y);
+
+        // Primary context translates to start at the (0,0) for the padding
+        const ctxconfig = ctx => {
+            ctx.translate(padding.x, padding.y);
+        };
+
+        this.withCtx(ctxconfig, ctx => {
+            // Draw the text background
+            switch (background) {
+                case 'outline':
+                    this.strokeText(lines, font, fontSize, alignment, textDim);
+                    break;
+                case 'circle':
+                    this.renderBackgroundCircle(textDim, TEXT_PADDING);
+                    break;
+                case 'rectangle':
+                    this.renderBackgroundRectangle(textDim, TEXT_PADDING);
+                    break;
+            }
+
+            // Useful for debugging, draws the BBox of the text
+            // renderTextBBox(textBB); 
+
+            // Finally render the desired label on the background
+            this.fillText(lines, font, fontSize, alignment, textDim);
+        });
+    }
+}
+
+/**
+ * Access helper for the input fields.
+ */
+class Inputs {
+    text() {
+        let text = document.getElementById('source').value;
+        let lines = text.split('\n');
+        return lines.map(line => line.trim());
+    }
+
+    alignment() {
+        return document.querySelector('.radio-alignment:checked').value;
+    }
+
+    background() {
+        return document.querySelector('.radio-background:checked').value;
+    }
+
+    font() {
+        return document.getElementById('font').value;
+    }
+}
+
+/**
+ * Main program entry point. Sets up event handlers.
+ */
+function main() {
+    const inputs = new Inputs();
+    const measurer = new TextMeasurer();
+    const renderer = new Renderer(measurer);
+
+    const updateLabel = () => {
+        renderer.renderLabel(
+            inputs.text(),
+            inputs.font(),
+            FONT_SIZE,
+            inputs.alignment(),
+            inputs.background()
+        );
     };
-}
 
-function getRenderingContext() {
-    let renderer = document.getElementById('renderer');
-    let ctx = renderer.getContext('2d');
-    initTextRender(ctx);
-    return ctx;
-}
-
-function resizeCanvas(width, height) {
-    let renderer = document.getElementById('renderer');
-    // resize the output renderer to fit the text
-    renderer.setAttribute('width', width);
-    renderer.setAttribute('height', height);
-    return getRenderingContext();
-}
-
-function renderText(ctx, lines, ctxRenderFun) {
-    ctx.save();
-    initTextRender(ctx);
-    let lineHeight = fontLineHeight(ctx);
-    let baselineoffset = lineHeight;
-
-    let textYPos = getTextYPos(ctx, lines);
-
-    for (let line of lines) {
-        ctxRenderFun.call(ctx, line, textYPos, baselineoffset);
-        baselineoffset += lineHeight + LINE_SKIP;
-    }
-    ctx.restore();
-}
-
-function renderTextBBox(ctx, textBB) {
-    ctx.save();
-    ctx.strokeStyle = 'green';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(0, 0, textBB.width, textBB.height);
-    ctx.restore();
-}
-
-function renderBackgroundRectangle(ctx, textBB, padding) {
-    ctx.save();
-    ctx.strokeStyle = '#000000aa';
-    ctx.lineWidth = BACKGROUND_STROKE_WIDTH;
-
-    ctx.fillStyle = 'white'
-    ctx.lineJoin = 'miter';
-
-    ctx.strokeRect(-1 * padding, -1 * padding, textBB.width + 2 * padding, textBB.height + 2 * padding);
-    ctx.fillRect(-1 * padding, -1 * padding, textBB.width + 2 * padding, textBB.height + 2 * padding);
-    ctx.restore();
-}
-
-function renderBackgroundCircle(ctx, textBB, padding) {
-    ctx.save();
-    ctx.strokeStyle = '#000000aa';
-    ctx.lineWidth = BACKGROUND_STROKE_WIDTH;
-
-    ctx.fillStyle = 'white'
-    ctx.lineJoin = 'miter';
-
-    let x = textBB.width / 2;
-    let y = textBB.height / 2;
-
-    let radius = 0.5 * Math.sqrt(Math.pow(textBB.width, 2) + Math.pow(textBB.height, 2)) + padding;
-
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, 2 * Math.PI);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.restore();
-}
-
-function measureTextSideBearing(lines) {
-
-    let leadX = 0;
-    let trailX = 0;
-    for (line of lines) {
-        let widthObj = textWidth(line);
-        leadX = Math.max(leadX, widthObj.leadX);
-        trailX = Math.max(trailX, widthObj.trailX);
-    }
-    return { leadX: leadX, trailX: trailX };
-}
-
-function getTextYPos(ctx, lines) {
-    let textBB = textBoundingBox(ctx, lines);
-    let sideBearing = measureTextSideBearing(lines)
-    let textYPos = 0;
-    switch (getAlignment()) {
-        case 'left':
-            textYPos = sideBearing.leadX;
-            break;
-        case 'center':
-            textYPos = (textBB.width + sideBearing.leadX - sideBearing.trailX) / 2;
-            break;
-        case 'right':
-            textYPos = textBB.width - sideBearing.trailX;
-            break;
-    }
-    return textYPos;
-}
-
-
-function renderCanvasText() {
-    let lines = getText();
-
-    let ctx = getRenderingContext();
-
-    let background = getBackground();
-    let paddingX = BACKGROUND_STROKE_WIDTH / 2;
-    let paddingY = BACKGROUND_STROKE_WIDTH / 2;
-
-    let textBB = textBoundingBox(ctx, lines);
-
-    // Figure out the X and Y padding depending on the background type
-    switch (background) {
-        case 'rectangle':
-            paddingX += TEXT_PADDING;
-            paddingY += TEXT_PADDING;
-            break;
-        case 'circle':
-            let diam = Math.sqrt(Math.pow(textBB.width, 2) + Math.pow(textBB.height, 2));
-            paddingX += TEXT_PADDING + (diam - textBB.width) / 2;
-            paddingY += TEXT_PADDING + (diam - textBB.height) / 2;
-            break;
-    }
-
-    ctx = resizeCanvas(textBB.width + 2 * paddingX, textBB.height + 2 * paddingY);
-
-    // Move all drawing commands to take padding into account
-    ctx.translate(paddingX, paddingY);
-
-    // Draw the text background
-    switch (background) {
-        case 'outline':
-            renderText(ctx, lines, CanvasRenderingContext2D.prototype.strokeText);
-            break;
-        case 'circle':
-            renderBackgroundCircle(ctx, textBB, TEXT_PADDING);
-            break;
-        case 'rectangle':
-            renderBackgroundRectangle(ctx, textBB, TEXT_PADDING);
-            break;
-    }
-
-    // renderTextBBox(ctx, textBB); // Useful for debugging, draws the BBox of the text
-
-    // Render the desired label
-    renderText(ctx, lines, CanvasRenderingContext2D.prototype.fillText);
-}
-
-document.addEventListener("DOMContentLoaded", function() {
     let source = document.getElementById('source');
-    source.addEventListener('keyup', updatePreview);
+    source.addEventListener('keyup', updateLabel);
 
     let fonts = document.getElementById('font');
-    fonts.addEventListener('change', changeFont);
+    const onFontChange = () => {
+        let fonts = document.getElementById('font');
+        font.style.fontFamily = `'${inputs.font()}'`;
+        updateLabel();
+    };
+    fonts.addEventListener('change', onFontChange);
 
     let link = document.getElementById('download');
     link.addEventListener('click', e => {
-        let self = this;
-        let canvas = document.getElementById("renderer");
-        var dataURL = canvas.toDataURL('image/png');
+
+        var dataURL = renderer.toDataURL();
         link.href = dataURL;
 
         let words = document.getElementById('source').value;
@@ -279,14 +369,16 @@ document.addEventListener("DOMContentLoaded", function() {
 
     let alignments = document.getElementsByName('alignment');
     alignments.forEach(radio => {
-        radio.addEventListener('change', updatePreview);
+        radio.addEventListener('change', updateLabel);
     });
 
     let backgrounds = document.getElementsByName('background');
     backgrounds.forEach(radio => {
-        radio.addEventListener('change', updatePreview);
+        radio.addEventListener('change', updateLabel);
     });
 
-    changeFont(); // Init the font picker font.
+    onFontChange(); // Init the font picker font.
+}
 
-});
+
+document.addEventListener("DOMContentLoaded", main);
