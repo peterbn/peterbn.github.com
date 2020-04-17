@@ -37,12 +37,13 @@ class TextMeasurer {
         this.svgtext.textContent = text;
 
         let bbox = this.svgtext.getBBox();
-        let textLength = this.svgtext.textLength.baseVal.value;
+        let textLength = this.svgtext.getComputedTextLength();
 
+        // measure the overflow before and after the line caused by font side bearing
+        // Rendering should start at X + leadX to have the edge of the text appear at X
+        // when rendering left-aligned left-to-right
         let baseX = parseInt(this.svgtext.getAttribute('x'));
-
         let overflow = bbox.width - textLength;
-
         let leadX = Math.abs(baseX - bbox.x);
         let trailX = overflow - leadX;
 
