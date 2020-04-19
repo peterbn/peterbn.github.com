@@ -305,12 +305,15 @@ class Renderer {
         });
     }
 
-    renderArrow(shaftWidth, arrowLength, fletchWidth, headWidth, headLength) {
+    renderArrow(shaftWidth, arrowLength, fletchWidth, headWidth) {
         const midY = fletchWidth / 2;
         const outerX = fletchWidth / 4;
         const outerXCP = fletchWidth / 4;
         const shaftStartX = fletchWidth / 2 + outerXCP;
         const halfThick = shaftWidth / 2;
+
+        const headLength = (4 / 3) * headWidth
+
         const shaftStopX = arrowLength - (3 / 4) * headLength;
 
         const strokeHeight = Math.max(headWidth, fletchWidth);
@@ -425,7 +428,7 @@ function main() {
     const updateArrow = () => {
         renderer.renderArrow(
             inputs.arrowShaftWidth(),
-            inputs.arrowLength(), inputs.arrowFletchWidth(), inputs.arrowHeadWidth(), inputs.arrowHeadLength());
+            inputs.arrowLength(), inputs.arrowFletchWidth(), inputs.arrowHeadWidth());
     }
 
     const inputUpdateHandler = e => {
