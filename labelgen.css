@@ -21,7 +21,7 @@ header h1 {
     main {
         display: grid;
         grid-template-columns: 40% 60%;
-        grid-template-rows: 180px auto;
+        grid-template-rows: min-content auto;
     }
     main #description {
         grid-column: 1;
