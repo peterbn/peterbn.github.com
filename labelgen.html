@@ -23,51 +23,65 @@
             </p>
         </section>
         <section id="input">
-            <label for="font">Font: </label>
-            <select id="font" name="font">
-                    <option value="Aclonica" style="font-family: 'Aclonica';" >Aclonica</option>
-                    <option value="Berkshire Swash" style="font-family: 'Berkshire Swash';" >Berkshire Swash</option>
-                    <option value="Glass Antiqua" style="font-family: 'Glass Antiqua';">Glass Antiqua</option>
-                    <option value="Libre Baskerville" style="font-family: 'Libre Baskerville';" selected>Libre Baskerville</option>
-                    <option value="Modern Antiqua" style="font-family: 'Modern Antiqua';">Modern Antiqua</option>
-                    <option value="Old Standard TT" style="font-family: 'Old Standard TT';">Old Standard TT</option>
-                    <option value="Roboto" style="font-family: 'Roboto';">Roboto</option>
-                    <option value="Uncial Antiqua" style="font-family: 'Uncial Antiqua';">Uncial Antiqua</option>
-            </select>
-            <label>Alignment</label>
-            <div class="alignment">
-                <label class="radio-container">
-                        <input type="radio" name="alignment" class="radio-alignment" value="left">
-                        <span class="radio-label material-icons">format_align_left</span>
-                </label>
-                <label class="radio-container">
-                        <input type="radio" name="alignment"  class="radio-alignment" value="center" checked>
-                        <span class="radio-label material-icons">format_align_center</span>
-                </label>
-                <label class="radio-container">
-                        <input type="radio" name="alignment" class="radio-alignment" value="right">
-                        <span class="radio-label material-icons">format_align_right</span>
-                </label>
-            </div>
+            <div id="tabs">
+                <input type="radio" name="tabs" value="label" class="tabs-control-radio" id="radio-tabs-label" checked>
+                <label for="radio-tabs-label" id="tabheader-label" class="tabheader">Text Label</label>
+                <div class="tab" id="tab-label">
+                    <label for="font">Font: </label>
+                    <select id="font" name="font">
+                            <option value="Aclonica" style="font-family: 'Aclonica';" >Aclonica</option>
+                            <option value="Berkshire Swash" style="font-family: 'Berkshire Swash';" >Berkshire Swash</option>
+                            <option value="Glass Antiqua" style="font-family: 'Glass Antiqua';">Glass Antiqua</option>
+                            <option value="Libre Baskerville" style="font-family: 'Libre Baskerville';" selected>Libre Baskerville</option>
+                            <option value="Modern Antiqua" style="font-family: 'Modern Antiqua';">Modern Antiqua</option>
+                            <option value="Old Standard TT" style="font-family: 'Old Standard TT';">Old Standard TT</option>
+                            <option value="Roboto" style="font-family: 'Roboto';">Roboto</option>
+                            <option value="Uncial Antiqua" style="font-family: 'Uncial Antiqua';">Uncial Antiqua</option>
+                    </select>
+                    <label>Alignment</label>
+                    <div class="alignment">
+                        <label class="radio-container">
+                                <input type="radio" name="alignment" class="radio-alignment" value="left">
+                                <span class="radio-label material-icons">format_align_left</span>
+                        </label>
+                        <label class="radio-container">
+                                <input type="radio" name="alignment"  class="radio-alignment" value="center" checked>
+                                <span class="radio-label material-icons">format_align_center</span>
+                        </label>
+                        <label class="radio-container">
+                                <input type="radio" name="alignment" class="radio-alignment" value="right">
+                                <span class="radio-label material-icons">format_align_right</span>
+                        </label>
+                    </div>
 
-            <label>Background</label>
-            <div class="background">
-                <label class="radio-container">
-                        <input type="radio" name="background" class="radio-background" value="outline" checked>
-                        <span class="radio-label">Outline</span>
-                </label>
-                <label class="radio-container">
-                        <input type="radio" name="background"  class="radio-background" value="circle" >
-                        <span class="radio-label">Circle</span>
-                </label>
-                <label class="radio-container">
-                        <input type="radio" name="background" class="radio-background" value="rectangle">
-                        <span class="radio-label">Rectangle</span>
-                </label>
-            </div>
+                    <label>Background</label>
+                    <div class="background">
+                        <label class="radio-container">
+                                <input type="radio" name="background" class="radio-background" value="outline" checked>
+                                <span class="radio-label">Outline</span>
+                        </label>
+                        <label class="radio-container">
+                                <input type="radio" name="background"  class="radio-background" value="circle" >
+                                <span class="radio-label">Circle</span>
+                        </label>
+                        <label class="radio-container">
+                                <input type="radio" name="background" class="radio-background" value="rectangle">
+                                <span class="radio-label">Rectangle</span>
+                        </label>
+                    </div>
 
-            <label for="source">Label text: </label>
-            <textarea type="text" id="source" name="source" placeholder="Write your label here!"></textarea>
+                    <label for="source">Label text: </label>
+                    <textarea type="text" id="source" name="source" placeholder="Write your label here!"></textarea>
+
+                </div>
+
+                <input type="radio" name="tabs" value="arrow" class="tabs-control-radio" id="radio-tabs-arrow">
+                <label for="radio-tabs-arrow" id="tabheader-arrow" class="tabheader">Arrow</label>
+                <div class="tab" id="tab-arrow">
+                    <h2>Tab with Arrow controls</h2>
+                </div>
+
+            </div>
             <a href="#" class="button pure-material-button-contained" id="download" download="">Download!</a>
         </section>
         <section id="output">

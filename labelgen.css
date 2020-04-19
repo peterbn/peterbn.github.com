@@ -71,14 +71,61 @@ header h1 {
     background-image: url('canvasbg.svg');
 }
 
-#input {
+.tab {
     display: grid;
     grid-template-columns: 150px 400px;
     row-gap: 5px;
+    padding: 20px;
 }
 
-#input>label {
+.tab>label {
     align-self: center;
+}
+
+
+/* Tabs */
+
+#tabs>.tabs-control-radio {
+    display: none;
+}
+
+#tabs {
+    display: grid;
+    grid-template-columns: [begin] min-content min-content auto [end];
+    grid-template-rows: [tabs] min-content [content] auto;
+    column-gap: 10px;
+    margin-bottom: 30px;
+}
+
+#tabs>.tabheader {
+    white-space: nowrap;
+    grid-row: tabs;
+    padding: 5px 15px;
+    background-color: white;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-style: solid solid none solid;
+    border-color: black;
+    border-width: 1px;
+}
+
+#tabs>.tab {
+    grid-row: content;
+    grid-column-start: begin;
+    grid-column-end: end;
+    display: none;
+    background-color: lightgray;
+}
+
+#tabs #radio-tabs-label:checked~#tab-label,
+#tabs #radio-tabs-arrow:checked~#tab-arrow {
+    display: grid;
+}
+
+#tabs #radio-tabs-label:checked~#tabheader-label,
+#tabs #radio-tabs-arrow:checked~#tabheader-arrow {
+    background-color: lightgray;
+    border-color: lightgray;
 }
 
 
@@ -216,6 +263,7 @@ Button effect!
     display: inline-block;
     border-radius: 4px;
     box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+    background-color: white;
 }
 
 .radio-container .radio-label:hover,
