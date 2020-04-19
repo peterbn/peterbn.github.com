@@ -20,7 +20,7 @@ header h1 {
 @media (min-width: 1400px) {
     main {
         display: grid;
-        grid-template-columns: auto auto;
+        grid-template-columns: 40% 60%;
         grid-template-rows: 180px auto;
     }
     main #description {
@@ -95,6 +95,8 @@ header h1 {
     grid-template-rows: [tabs] min-content [content] auto;
     column-gap: 10px;
     margin-bottom: 30px;
+    border-radius: 5px;
+    border-top-left-radius: 0;
 }
 
 #tabs>.tabheader {
@@ -105,7 +107,7 @@ header h1 {
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
     border-style: solid solid none solid;
-    border-color: black;
+    border-color: gray;
     border-width: 1px;
 }
 
