@@ -124,10 +124,7 @@ class Renderer {
         this.canvas = document.getElementById('renderer');
         this.measurer = measurer;
 
-        this.fgcolor = "#000000";
-        this.bgcolor = "#ffffff";
-
-        this.bordercolor = "#000000aa"
+        this.setColors("#000000", "#ffffff");
     }
 
     /**
