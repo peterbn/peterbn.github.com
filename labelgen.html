@@ -26,10 +26,16 @@
             </p>
         </section>
         <section id="input">
+            <div class="fieldcontainer">
+                <label for="fgcolor">Color</label>
+                <input type="color" value="#000000" id="fgcolor">
+                <label for="bgcolor">Background Color</label>
+                <input type="color" value="#ffffff" id="bgcolor">
+            </div>
             <div id="tabs">
                 <input type="radio" name="tabs" value="label" class="tabs-control-radio" id="radio-tabs-label" checked>
                 <label for="radio-tabs-label" id="tabheader-label" class="tabheader">Text Label</label>
-                <div class="tab" id="tab-label">
+                <div class="tab fieldcontainer" id="tab-label">
                     <label for="font">Font</label>
                     <select id="font" name="font">
                             <option value="Aclonica" style="font-family: 'Aclonica';" >Aclonica</option>
@@ -80,7 +86,7 @@
 
                 <input type="radio" name="tabs" value="arrow" class="tabs-control-radio" id="radio-tabs-arrow">
                 <label for="radio-tabs-arrow" id="tabheader-arrow" class="tabheader">Arrow</label>
-                <div class="tab" id="tab-arrow">
+                <div class="tab fieldcontainer" id="tab-arrow">
                     <label>Arrow Length</label>
                     <div class="sliderinput">
                         <input id="arrowLength" type="range" min="1" max="1000" name="arrowShaftLength" value="400">

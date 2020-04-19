@@ -72,14 +72,6 @@ header h1 {
     background-image: url('canvasbg.svg');
 }
 
-.tab {
-    display: grid;
-    grid-template-columns: max-content auto;
-    row-gap: 5px;
-    padding: 20px;
-    column-gap: 10px;
-}
-
 .sliderinput {
     display: grid;
     grid-template-columns: auto 4em;
@@ -154,6 +146,14 @@ input[type=number] {
 #tabs #radio-tabs-arrow:checked~#tabheader-arrow {
     background-color: lightgray;
     border-color: lightgray;
+}
+
+.fieldcontainer {
+    display: grid;
+    grid-template-columns: max-content auto;
+    row-gap: 5px;
+    padding: 20px;
+    column-gap: 10px;
 }
 
 

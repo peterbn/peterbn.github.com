@@ -123,6 +123,11 @@ class Renderer {
     constructor(measurer) {
         this.canvas = document.getElementById('renderer');
         this.measurer = measurer;
+
+        this.fgcolor = "#000000";
+        this.bgcolor = "#ffffff";
+
+        this.bordercolor = "#000000aa"
     }
 
     /**
@@ -140,6 +145,12 @@ class Renderer {
     resize(width, height) {
         this.canvas.setAttribute('width', width);
         this.canvas.setAttribute('height', height);
+    }
+
+    setColors(fgcolor, bgcolor) {
+        this.fgcolor = fgcolor;
+        this.bgcolor = bgcolor;
+        this.bordercolor = fgcolor + '7f';
     }
 
     /**
@@ -171,11 +182,11 @@ class Renderer {
             ctx.font = `${fontSize} ${font}`;
             ctx.textBaseline = 'bottom';
             ctx.textAlign = alignment;
-            ctx.strokeStyle = 'rgba(255,255,255,1)';
+            ctx.strokeStyle = this.bgcolor;
             ctx.lineWidth = BACKGROUND_STROKE_WIDTH;
             ctx.lineJoin = 'round';
             ctx.miterLimit = 3;
-            ctx.fillStyle = '#000000';
+            ctx.fillStyle = this.fgcolor;
         };
 
         this.withCtx(ctxconfig, ctx => {
@@ -208,9 +219,9 @@ class Renderer {
 
     renderBackgroundRectangle(textBB, padding) {
         const ctxconfig = ctx => {
-            ctx.strokeStyle = '#000000aa';
+            ctx.strokeStyle = this.bordercolor;
             ctx.lineWidth = BACKGROUND_STROKE_WIDTH;
-            ctx.fillStyle = 'white'
+            ctx.fillStyle = this.bgcolor;
             ctx.lineJoin = 'miter';
         };
         this.withCtx(ctxconfig, ctx => {
@@ -221,9 +232,9 @@ class Renderer {
 
     renderBackgroundCircle(textBB, padding) {
         const ctxconfig = ctx => {
-            ctx.strokeStyle = '#000000aa';
+            ctx.strokeStyle = this.bordercolor;
             ctx.lineWidth = BACKGROUND_STROKE_WIDTH;
-            ctx.fillStyle = 'white'
+            ctx.fillStyle = this.bgcolor;
             ctx.lineJoin = 'miter';
         }
 
@@ -326,10 +337,10 @@ class Renderer {
 
         const ctxconfig = ctx => {
             ctx.translate(startX, startY);
-            ctx.strokeStyle = 'rgba(255,255,255,1)';
+            ctx.strokeStyle = this.bgcolor;
             ctx.lineWidth = BACKGROUND_STROKE_WIDTH;
             ctx.lineJoin = 'round';
-            ctx.fillStyle = '#000000';
+            ctx.fillStyle = this.fgcolor;
         };
 
         this.withCtx(ctxconfig, ctx => {
@@ -373,6 +384,14 @@ class Inputs {
         let text = document.getElementById('source').value;
         let lines = text.split('\n');
         return lines.map(line => line.trim());
+    }
+
+    fgcolor() {
+        return document.getElementById('fgcolor').value;
+    }
+
+    bgcolor() {
+        return document.getElementById('bgcolor').value;
     }
 
     alignment() {
@@ -432,6 +451,7 @@ function main() {
     }
 
     const inputUpdateHandler = e => {
+        renderer.setColors(inputs.fgcolor(), inputs.bgcolor());
         switch (inputs.tab()) {
             case "label":
                 return updateLabel();
