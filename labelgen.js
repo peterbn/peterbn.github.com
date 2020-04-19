@@ -304,6 +304,57 @@ class Renderer {
             this.fillText(lines, font, fontSize, alignment, textDim);
         });
     }
+
+    renderArrow(shaftWidth, shaftLength, fletchWidth, arrowWidth, arrowLength) {
+        const midY = fletchWidth / 2;
+        const outerX = fletchWidth / 4;
+        const outerXCP = fletchWidth / 4;
+        const shaftStartX = fletchWidth / 2 + outerXCP;
+        const halfThick = shaftWidth / 2;
+        const shaftStopX = shaftStartX + shaftLength;
+
+        const strokeHeight = Math.max(arrowWidth, fletchWidth);
+        const strokeWidth = shaftStopX + (3 / 4) * arrowLength;
+        const startX = BACKGROUND_STROKE_WIDTH / 2;
+        const startY = BACKGROUND_STROKE_WIDTH / 2 + Math.max(0, (arrowWidth - fletchWidth) / 2);
+
+        // Resize the canvas to fit the final image exactly
+        this.resize(strokeWidth + BACKGROUND_STROKE_WIDTH, strokeHeight + BACKGROUND_STROKE_WIDTH);
+
+        const ctxconfig = ctx => {
+            ctx.translate(startX, startY);
+            ctx.strokeStyle = 'rgba(255,255,255,1)';
+            ctx.lineWidth = BACKGROUND_STROKE_WIDTH;
+            ctx.lineJoin = 'round';
+            ctx.fillStyle = '#000000';
+        };
+
+        this.withCtx(ctxconfig, ctx => {
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            // Back and lower fletch
+            ctx.quadraticCurveTo(10, midY, outerX, midY);
+            ctx.quadraticCurveTo(10, midY, 0, 2 * midY);
+
+            ctx.quadraticCurveTo(outerXCP, midY + halfThick, shaftStartX, midY + halfThick);
+
+            ctx.lineTo(shaftStopX, midY + halfThick);
+
+            //arrow head
+            ctx.lineTo(shaftStopX - (arrowLength / 4), midY + arrowWidth / 2);
+            ctx.lineTo(shaftStopX + (arrowLength * (3 / 4)), midY);
+            ctx.lineTo(shaftStopX - (arrowLength / 4), midY - arrowWidth / 2);
+
+
+            ctx.lineTo(shaftStopX, midY - halfThick);
+
+            ctx.lineTo(shaftStartX, midY - halfThick);
+            ctx.quadraticCurveTo(outerXCP, midY - halfThick, 0, 0);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.fill();
+        });
+    }
 }
 
 /**
