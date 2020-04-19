@@ -27,7 +27,7 @@
                 <input type="radio" name="tabs" value="label" class="tabs-control-radio" id="radio-tabs-label" checked>
                 <label for="radio-tabs-label" id="tabheader-label" class="tabheader">Text Label</label>
                 <div class="tab" id="tab-label">
-                    <label for="font">Font: </label>
+                    <label for="font">Font</label>
                     <select id="font" name="font">
                             <option value="Aclonica" style="font-family: 'Aclonica';" >Aclonica</option>
                             <option value="Berkshire Swash" style="font-family: 'Berkshire Swash';" >Berkshire Swash</option>
@@ -70,7 +70,7 @@
                         </label>
                     </div>
 
-                    <label for="source">Label text: </label>
+                    <label for="source">Label text</label>
                     <textarea type="text" id="source" name="source" placeholder="Write your label here!"></textarea>
 
                 </div>
@@ -78,7 +78,16 @@
                 <input type="radio" name="tabs" value="arrow" class="tabs-control-radio" id="radio-tabs-arrow">
                 <label for="radio-tabs-arrow" id="tabheader-arrow" class="tabheader">Arrow</label>
                 <div class="tab" id="tab-arrow">
-                    <h2>Tab with Arrow controls</h2>
+                    <label>Arrow Length</label>
+                    <input id="arrowLength" type="number" name="arrowShaftLength" value="400">
+                    <label>Shaft Width</label>
+                    <input id="arrowWidth" type="number" name="arrowShaftWidth" value="10">
+                    <label>Back Width</label>
+                    <input id="arrowFletchWidth" type="number" name="arrowBackWidth" value="60">
+                    <label>Head Width</label>
+                    <input id="arrowHeadWidth" type="number" name="arrowHeadWidth" value="80">
+                    <label>Head Length</label>
+                    <input id="arrowHeadLength" type="number" name="arrowHeadLength" value="100">
                 </div>
 
             </div>
