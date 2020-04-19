@@ -361,6 +361,11 @@ class Renderer {
  * Access helper for the input fields.
  */
 class Inputs {
+
+    tab() {
+        return document.querySelector('.tabs-control-radio:checked').value;
+    }
+
     text() {
         let text = document.getElementById('source').value;
         let lines = text.split('\n');
@@ -377,6 +382,25 @@ class Inputs {
 
     font() {
         return document.getElementById('font').value;
+    }
+
+    arrowLength() {
+        return parseInt(document.getElementById('arrowLength').value);
+    }
+
+    arrowShaftWidth() {
+        return parseInt(document.getElementById('arrowWidth').value);
+    }
+
+    arrowFletchWidth() {
+        return parseInt(document.getElementById('arrowFletchWidth').value);
+    }
+
+    arrowHeadWidth() {
+        return parseInt(document.getElementById('arrowHeadWidth').value);
+    }
+    arrowHeadLength() {
+        return parseInt(document.getElementById('arrowHeadLength').value);
     }
 }
 
@@ -398,15 +422,32 @@ function main() {
         );
     };
 
-    let source = document.getElementById('source');
-    source.addEventListener('keyup', updateLabel);
+    const updateArrow = () => {
+        renderer.renderArrow(
+            inputs.arrowShaftWidth(),
+            inputs.arrowLength(), inputs.arrowFletchWidth(), inputs.arrowHeadWidth(), inputs.arrowHeadLength());
+    }
 
-    let fonts = document.getElementById('font');
-    const onFontChange = () => {
-        let fonts = document.getElementById('font');
-        font.style.fontFamily = `'${inputs.font()}'`;
-        updateLabel();
+    const inputUpdateHandler = e => {
+        switch (inputs.tab()) {
+            case "label":
+                return updateLabel();
+            case "arrow":
+                return updateArrow();
+        }
     };
+
+    document.querySelectorAll('#input input,#input textarea').forEach(input => {
+        input.addEventListener('change', inputUpdateHandler);
+        input.addEventListener('keyup', inputUpdateHandler);
+    });
+
+
+    const onFontChange = () => {
+        let font = document.getElementById('font');
+        font.style.fontFamily = `'${inputs.font()}'`;
+    };
+    let fonts = document.getElementById('font');
     fonts.addEventListener('change', onFontChange);
 
     let link = document.getElementById('download');
@@ -419,17 +460,8 @@ function main() {
         link.setAttribute('download', words + '.png');
     });
 
-    let alignments = document.getElementsByName('alignment');
-    alignments.forEach(radio => {
-        radio.addEventListener('change', updateLabel);
-    });
-
-    let backgrounds = document.getElementsByName('background');
-    backgrounds.forEach(radio => {
-        radio.addEventListener('change', updateLabel);
-    });
-
     onFontChange(); // Init the font picker font.
+    inputUpdateHandler();
 }
 
 
