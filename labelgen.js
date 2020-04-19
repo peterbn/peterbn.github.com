@@ -305,18 +305,18 @@ class Renderer {
         });
     }
 
-    renderArrow(shaftWidth, shaftLength, fletchWidth, arrowWidth, arrowLength) {
+    renderArrow(shaftWidth, arrowLength, fletchWidth, headWidth, headLength) {
         const midY = fletchWidth / 2;
         const outerX = fletchWidth / 4;
         const outerXCP = fletchWidth / 4;
         const shaftStartX = fletchWidth / 2 + outerXCP;
         const halfThick = shaftWidth / 2;
-        const shaftStopX = shaftStartX + shaftLength;
+        const shaftStopX = arrowLength - (3 / 4) * headLength;
 
-        const strokeHeight = Math.max(arrowWidth, fletchWidth);
-        const strokeWidth = shaftStopX + (3 / 4) * arrowLength;
+        const strokeHeight = Math.max(headWidth, fletchWidth);
+        const strokeWidth = shaftStopX + (3 / 4) * headLength;
         const startX = BACKGROUND_STROKE_WIDTH / 2;
-        const startY = BACKGROUND_STROKE_WIDTH / 2 + Math.max(0, (arrowWidth - fletchWidth) / 2);
+        const startY = BACKGROUND_STROKE_WIDTH / 2 + Math.max(0, (headWidth - fletchWidth) / 2);
 
         // Resize the canvas to fit the final image exactly
         this.resize(strokeWidth + BACKGROUND_STROKE_WIDTH, strokeHeight + BACKGROUND_STROKE_WIDTH);
@@ -341,9 +341,9 @@ class Renderer {
             ctx.lineTo(shaftStopX, midY + halfThick);
 
             //arrow head
-            ctx.lineTo(shaftStopX - (arrowLength / 4), midY + arrowWidth / 2);
-            ctx.lineTo(shaftStopX + (arrowLength * (3 / 4)), midY);
-            ctx.lineTo(shaftStopX - (arrowLength / 4), midY - arrowWidth / 2);
+            ctx.lineTo(shaftStopX - (headLength / 4), midY + headWidth / 2);
+            ctx.lineTo(shaftStopX + (headLength * (3 / 4)), midY);
+            ctx.lineTo(shaftStopX - (headLength / 4), midY - headWidth / 2);
 
 
             ctx.lineTo(shaftStopX, midY - halfThick);
