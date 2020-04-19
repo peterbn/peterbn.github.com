@@ -82,15 +82,31 @@
                 <label for="radio-tabs-arrow" id="tabheader-arrow" class="tabheader">Arrow</label>
                 <div class="tab" id="tab-arrow">
                     <label>Arrow Length</label>
-                    <input id="arrowLength" type="number" name="arrowShaftLength" value="400">
+                    <div class="sliderinput">
+                        <input id="arrowLength" type="range" min="1" max="1000" name="arrowShaftLength" value="400">
+                        <span class="sliderOutput"></span>
+                    </div>
+
                     <label>Shaft Width</label>
-                    <input id="arrowWidth" type="number" name="arrowShaftWidth" value="10">
+                    <div class="sliderinput">
+                        <input id="arrowWidth" type="range" min="1" max="50" name="arrowShaftWidth" value="10">
+                        <span class="sliderOutput"></span>
+                    </div>
                     <label>Back Width</label>
-                    <input id="arrowFletchWidth" type="number" name="arrowBackWidth" value="60">
+                    <div class="sliderinput">
+                        <input id="arrowFletchWidth" type="range" min="0" max="200" name="arrowBackWidth" value="60">
+                        <span class="sliderOutput"></span>
+                    </div>
                     <label>Head Width</label>
-                    <input id="arrowHeadWidth" type="number" name="arrowHeadWidth" value="80">
+                    <div class="sliderinput">
+                        <input id="arrowHeadWidth" type="range" min="0" max="200" name="arrowHeadWidth" value="80">
+                        <span class="sliderOutput"></span>
+                    </div>
                     <label>Head Length</label>
-                    <input id="arrowHeadLength" type="number" name="arrowHeadLength" value="100">
+                    <div class="sliderinput">
+                        <input id="arrowHeadLength" type="range" min="0" max="300" name="arrowHeadLength" value="100">
+                        <span class="sliderOutput"></span>
+                    </div>
                 </div>
 
             </div>

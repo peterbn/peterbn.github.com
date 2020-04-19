@@ -447,18 +447,45 @@ function main() {
         let font = document.getElementById('font');
         font.style.fontFamily = `'${inputs.font()}'`;
     };
-    let fonts = document.getElementById('font');
-    fonts.addEventListener('change', onFontChange);
+    document.getElementById('font').addEventListener('change', onFontChange);
+
+    const updateSliderValue = input => {
+        let output = input.parentElement.querySelector('.sliderOutput');
+        output.textContent = input.value;
+    }
+
+    const onSliderUpdate = e => {
+        let input = e.target;
+        updateSliderValue(input);
+    };
+
+    document.querySelectorAll('.sliderinput input').forEach(slider => {
+
+        slider.addEventListener('change', onSliderUpdate)
+        updateSliderValue(slider);
+    });
+
+
+    const filename = () => {
+        switch (inputs.tab()) {
+            case "arrow":
+                let length = inputs.arrowLength();
+                return "arrow_" + length + "px.png";
+
+            case "label":
+                let lines = inputs.text();
+                return lines.join("_") + ".png";
+        }
+    }
 
     let link = document.getElementById('download');
     link.addEventListener('click', e => {
 
         var dataURL = renderer.toDataURL();
         link.href = dataURL;
-
-        let words = document.getElementById('source').value;
-        link.setAttribute('download', words + '.png');
+        link.setAttribute('download', filename());
     });
+
 
     onFontChange(); // Init the font picker font.
     inputUpdateHandler();
