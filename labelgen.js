@@ -440,9 +440,8 @@ function main() {
         }
     };
 
-    document.querySelectorAll('#input input,#input textarea').forEach(input => {
-        input.addEventListener('change', inputUpdateHandler);
-        input.addEventListener('keyup', inputUpdateHandler);
+    document.querySelectorAll('#input input,#input textarea,#input select').forEach(input => {
+        input.addEventListener('input', inputUpdateHandler);
     });
 
 
@@ -463,8 +462,7 @@ function main() {
     };
 
     document.querySelectorAll('.sliderinput input').forEach(slider => {
-
-        slider.addEventListener('change', onSliderUpdate)
+        slider.addEventListener('input', onSliderUpdate)
         updateSliderValue(slider);
     });
 
