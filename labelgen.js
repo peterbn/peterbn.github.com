@@ -627,7 +627,7 @@ function main() {
             inputs.arrowLength(), inputs.arrowFletchWidth(), inputs.arrowHeadWidth());
     }
 
-    const inputUpdateHandler = e => {
+    const inputUpdateHandler = function(e) {
         renderer.setColors(inputs.fgcolor(), inputs.bgcolor());
         switch (inputs.tab()) {
             case "label":
@@ -666,6 +666,16 @@ function main() {
         slider.addEventListener('input', onSliderUpdate)
         updateSliderValue(slider);
     });
+
+    const setPresetColor = function(elemId) {
+        return function(e) {
+            const btn = e.srcElement;
+            const color = btn.value;
+            document.getElementById(elemId).value = color;
+        }
+    };
+    document.querySelectorAll('.fgcolor-preset').forEach(e => e.addEventListener('click', setPresetColor('fgcolor')));
+    document.querySelectorAll('.bgcolor-preset').forEach(e => e.addEventListener('click', setPresetColor('bgcolor')));
 
 
     const filename = () => {

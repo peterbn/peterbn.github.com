@@ -29,9 +29,17 @@
         <section id="input">
             <div class="fieldcontainer">
                 <label for="fgcolor">Color</label>
-                <input type="color" value="#000000" id="fgcolor">
+                <div>
+                    <input type="color" value="#000000" id="fgcolor">
+                    <span>Presets: </span>
+                    <button type="button" class="fgcolor-preset" value="#000475">Ink <span style="display: inline-block; width: 1em; height: 1em; background-color: #000475;"></span></button>
+                </div>
                 <label for="bgcolor">Background Color</label>
-                <input type="color" value="#ffffff" id="bgcolor">
+                <div>
+                    <input type="color" value="#ffffff" id="bgcolor">
+                    <span>Presets: </span>
+                    <button type="button" class="bgcolor-preset" value="#FFD894">Parchment <span style="display: inline-block; width: 1em; height: 1em; background-color: #FFD894;"></span></button>
+                </div>
             </div>
             <div id="tabs">
                 <input type="radio" name="tabs" value="label" class="tabs-control-radio" id="radio-tabs-label" checked>
