@@ -565,6 +565,10 @@ class Inputs {
         return document.getElementById('letter-background').checked;
     }
 
+    letterjaggededges() {
+        return document.getElementById('letter-edges').checked;
+    }
+
     arrowLength() {
         return parseInt(document.getElementById('arrowLength').value);
     }
@@ -606,13 +610,14 @@ function main() {
 
     const updateLetter = () => {
         const background = inputs.letterdirtybackground() ? 'letter_dirty' : 'letter_clean';
+        const jagging = inputs.letterjaggededges() ? 50 : 0;
         renderer.renderLabel(
             inputs.letter(),
             inputs.letterfont(),
             LETTER_FONT_SIZE,
             inputs.letteralignment(),
             background,
-            50
+            jagging
         );
     }
 
