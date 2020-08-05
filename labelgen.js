@@ -2,6 +2,7 @@ const TEXT_PADDING = 16;
 const LINE_SKIP = 6;
 const BACKGROUND_STROKE_WIDTH = 16;
 const FONT_SIZE = '80px';
+const LETTER_FONT_SIZE = '16pt';
 
 /**
  * Helper class to correctly measure text before rendering, using an SVG element
@@ -127,6 +128,37 @@ class Renderer {
         this.setColors("#000000", "#ffffff");
     }
 
+    // https://github.com/PimpTrizkit/PJs/wiki/12.-Shade,-Blend-and-Convert-a-Web-Color-(pSBC.js)
+    pSBC(p, c0, c1, l) {
+        let r, g, b, P, f, t, h, i = parseInt,
+            m = Math.round,
+            a = typeof(c1) == "string";
+        if (typeof(p) != "number" || p < -1 || p > 1 || typeof(c0) != "string" || (c0[0] != 'r' && c0[0] != '#') || (c1 && !a)) return null;
+        if (!this.pSBCr) this.pSBCr = (d) => {
+            let n = d.length,
+                x = {};
+            if (n > 9) {
+                [r, g, b, a] = d = d.split(","), n = d.length;
+                if (n < 3 || n > 4) return null;
+                x.r = i(r[3] == "a" ? r.slice(5) : r.slice(4)), x.g = i(g), x.b = i(b), x.a = a ? parseFloat(a) : -1
+            } else {
+                if (n == 8 || n == 6 || n < 4) return null;
+                if (n < 6) d = "#" + d[1] + d[1] + d[2] + d[2] + d[3] + d[3] + (n > 4 ? d[4] + d[4] : "");
+                d = i(d.slice(1), 16);
+                if (n == 9 || n == 5) x.r = d >> 24 & 255, x.g = d >> 16 & 255, x.b = d >> 8 & 255, x.a = m((d & 255) / 0.255) / 1000;
+                else x.r = d >> 16, x.g = d >> 8 & 255, x.b = d & 255, x.a = -1
+            }
+            return x
+        };
+        h = c0.length > 9, h = a ? c1.length > 9 ? true : c1 == "c" ? !h : false : h, f = this.pSBCr(c0), P = p < 0, t = c1 && c1 != "c" ? this.pSBCr(c1) : P ? { r: 0, g: 0, b: 0, a: -1 } : { r: 255, g: 255, b: 255, a: -1 }, p = P ? p * -1 : p, P = 1 - p;
+        if (!f || !t) return null;
+        if (l) r = m(P * f.r + p * t.r), g = m(P * f.g + p * t.g), b = m(P * f.b + p * t.b);
+        else r = m((P * f.r ** 2 + p * t.r ** 2) ** 0.5), g = m((P * f.g ** 2 + p * t.g ** 2) ** 0.5), b = m((P * f.b ** 2 + p * t.b ** 2) ** 0.5);
+        a = f.a, t = t.a, f = a >= 0 || t >= 0, a = f ? a < 0 ? t : t < 0 ? a : a * P + t * p : 0;
+        if (h) return "rgb" + (f ? "a(" : "(") + r + "," + g + "," + b + (f ? "," + m(a * 1000) / 1000 : "") + ")";
+        else return "#" + (4294967296 + r * 16777216 + g * 65536 + b * 256 + (f ? m(a * 255) : 0)).toString(16).slice(1, f ? undefined : -2)
+    }
+
     /**
      * Get a data url of the image as PNG
      */
@@ -227,6 +259,46 @@ class Renderer {
         });
     }
 
+    renderBackgroundLetter(textBB, padding) {
+        const ctxconfig = ctx => {
+            ctx.fillStyle = this.bgcolor;
+            ctx.lineJoin = 'miter';
+        };
+        this.withCtx(ctxconfig, ctx => {
+            ctx.fillRect(-1 * padding - 0.5 * BACKGROUND_STROKE_WIDTH, -1 * padding - 0.5 * BACKGROUND_STROKE_WIDTH,
+                textBB.width + 2 * padding + BACKGROUND_STROKE_WIDTH, textBB.height + 2 * padding + BACKGROUND_STROKE_WIDTH);
+        });
+
+        // Generate a dirty background by randomly putting down darkened blobs
+        const smearctxconfig = ctx => {
+            const smearColor = this.pSBC(-0.30, this.bgcolor); // darken by 30%
+            ctx.fillStyle = smearColor;
+            ctx.lineJoin = 'miter';
+            ctx.globalCompositionOperation = 'burn';
+            ctx.globalAlpha = 0.1
+        }
+
+        const randInt = (max) => Math.floor(Math.random() * Math.floor(max));
+        const randomCoord = () => {
+            return {
+                x: randInt(textBB.width),
+                y: randInt(textBB.height),
+            }
+        };
+        this.withCtx(smearctxconfig, ctx => {
+            const intensity = Math.floor((textBB.width * textBB.height) / 100);
+            const maxRadius = Math.min(textBB.width, textBB.height) / 8;
+            for (let i = 0; i < intensity; i++) {
+                const center = randomCoord();
+
+                const radius = Math.max(1, randInt(maxRadius));
+                ctx.beginPath();
+                ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+        });
+    }
+
     renderBackgroundCircle(textBB, padding) {
         const ctxconfig = ctx => {
             ctx.strokeStyle = this.bordercolor;
@@ -258,6 +330,7 @@ class Renderer {
         // Figure out the X and Y padding depending on the background type
         switch (background) {
             case 'rectangle':
+            case 'letter':
                 paddingX += TEXT_PADDING;
                 paddingY += TEXT_PADDING;
                 break;
@@ -302,6 +375,9 @@ class Renderer {
                     break;
                 case 'rectangle':
                     this.renderBackgroundRectangle(textDim, TEXT_PADDING);
+                    break;
+                case 'letter':
+                    this.renderBackgroundLetter(textDim, TEXT_PADDING);
                     break;
             }
 
@@ -383,6 +459,12 @@ class Inputs {
         return lines.map(line => line.trim());
     }
 
+    letter() {
+        let text = document.getElementById('source-letter').value;
+        let lines = text.split('\n');
+        return lines.map(line => line.trim());
+    }
+
     fgcolor() {
         return document.getElementById('fgcolor').value;
     }
@@ -395,12 +477,20 @@ class Inputs {
         return document.querySelector('.radio-alignment:checked').value;
     }
 
+    letteralignment() {
+        return document.querySelector('.radio-alignment-letter:checked').value;
+    }
+
     background() {
         return document.querySelector('.radio-background:checked').value;
     }
 
     font() {
         return document.getElementById('font').value;
+    }
+
+    letterfont() {
+        return document.getElementById('font-letter').value;
     }
 
     arrowLength() {
@@ -441,6 +531,16 @@ function main() {
         );
     };
 
+    const updateLetter = () => {
+        renderer.renderLabel(
+            inputs.letter(),
+            inputs.letterfont(),
+            LETTER_FONT_SIZE,
+            inputs.letteralignment(),
+            'letter'
+        );
+    }
+
     const updateArrow = () => {
         renderer.renderArrow(
             inputs.arrowShaftWidth(),
@@ -452,6 +552,8 @@ function main() {
         switch (inputs.tab()) {
             case "label":
                 return updateLabel();
+            case "letter":
+                return updateLetter();
             case "arrow":
                 return updateArrow();
         }
@@ -463,10 +565,12 @@ function main() {
 
 
     const onFontChange = () => {
-        let font = document.getElementById('font');
-        font.style.fontFamily = `'${inputs.font()}'`;
+        let fontElements = document.querySelectorAll('.fontselect');
+        fontElements.forEach(elem => {
+            elem.style.fontFamily = `'${elem.value}'`;
+        });
     };
-    document.getElementById('font').addEventListener('change', onFontChange);
+    document.querySelectorAll('.fontselect').forEach(elem => elem.addEventListener('change', onFontChange));
 
     const updateSliderValue = input => {
         let output = input.parentElement.querySelector('.sliderOutput');

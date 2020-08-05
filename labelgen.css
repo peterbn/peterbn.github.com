@@ -48,7 +48,7 @@ header h1 {
     padding-bottom: 0;
 }
 
-#font {
+.fontselect {
     padding: 3px;
     display: inline-block;
     font-size: 24px;
@@ -138,11 +138,13 @@ input[type=number] {
 }
 
 #tabs #radio-tabs-label:checked~#tab-label,
+#tabs #radio-tabs-letter:checked~#tab-letter,
 #tabs #radio-tabs-arrow:checked~#tab-arrow {
     display: grid;
 }
 
 #tabs #radio-tabs-label:checked~#tabheader-label,
+#tabs #radio-tabs-letter:checked~#tabheader-letter,
 #tabs #radio-tabs-arrow:checked~#tabheader-arrow {
     background-color: lightgray;
     border-color: lightgray;
