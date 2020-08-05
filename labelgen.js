@@ -4,6 +4,8 @@ const BACKGROUND_STROKE_WIDTH = 16;
 const FONT_SIZE = '80px';
 const LETTER_FONT_SIZE = '16pt';
 
+function randInt(max) { return Math.floor(Math.random() * Math.floor(max)) }
+
 /**
  * Helper class to correctly measure text before rendering, using an SVG element
  */
@@ -259,6 +261,8 @@ class Renderer {
         });
     }
 
+
+
     renderBackgroundLetter(textBB, padding, background) {
         const ctxconfig = ctx => {
             ctx.fillStyle = this.bgcolor;
@@ -275,11 +279,10 @@ class Renderer {
                 const smearColor = this.pSBC(-0.30, this.bgcolor); // darken by 30%
                 ctx.fillStyle = smearColor;
                 ctx.lineJoin = 'miter';
-                ctx.globalCompositionOperation = 'burn';
+                ctx.globalCompositeOperation = 'burn';
                 ctx.globalAlpha = 0.1
             }
 
-            const randInt = (max) => Math.floor(Math.random() * Math.floor(max));
             const randomCoord = () => {
                 return {
                     x: randInt(textBB.width),
@@ -324,6 +327,60 @@ class Renderer {
         });
     }
 
+    clipJagging(textBB, padding, jagging) {
+
+        const clipconfig = ctx => {
+            ctx.fillStyle = '#ff0000';
+            ctx.globalCompositeOperation = 'destination-out';
+        };
+
+        const randJag = (ctx) => {
+            const baseline = Math.max(5, randInt(jagging));
+            const height = Math.min(padding, (jagging * 2) / baseline);
+            const jagpoint = (Math.max(90, Math.min(10, randInt(100))) * baseline) / 100;
+
+            ctx.beginPath()
+            ctx.moveTo(-0.5 * baseline, 0);
+            ctx.lineTo(0.5 * baseline, 0);
+            ctx.lineTo(jagpoint / 2, height);
+            ctx.lineTo(-0.5 * baseline, 0);
+            ctx.fill();
+        }
+
+        for (let i = 0; i < textBB.width / 5; i++) {
+            // top
+            this.withCtx(clipconfig, ctx => {
+                const pos = randInt(textBB.width + 2 * padding);
+                ctx.translate(pos, 0);
+                randJag(ctx);
+            });
+            // bottom
+            this.withCtx(clipconfig, ctx => {
+                const pos = randInt(textBB.width + 2 * padding);
+                ctx.translate(pos, textBB.height + 3 * padding);
+                ctx.rotate(Math.PI);
+                randJag(ctx);
+            });
+        }
+        for (let i = 0; i < textBB.height / 5; i++) {
+            // top
+            this.withCtx(clipconfig, ctx => {
+                const pos = randInt(textBB.height + 2 * padding);
+                ctx.translate(0, pos);
+                ctx.rotate(1.5 * Math.PI)
+                randJag(ctx);
+            });
+            // bottom
+            this.withCtx(clipconfig, ctx => {
+                const pos = randInt(textBB.height + 2 * padding);
+                ctx.translate(textBB.width + 3 * padding, pos);
+                ctx.rotate(0.5 * Math.PI);
+                randJag(ctx);
+            });
+        }
+
+    }
+
     _getPadding(textDim, background) {
         // The base padding is the outside part of the stroke, i.e. half width
         let paddingX = BACKGROUND_STROKE_WIDTH / 2;
@@ -333,7 +390,8 @@ class Renderer {
         // Figure out the X and Y padding depending on the background type
         switch (background) {
             case 'rectangle':
-            case 'letter':
+            case 'letter_clean':
+            case 'letter_dirty':
                 paddingX += TEXT_PADDING;
                 paddingY += TEXT_PADDING;
                 break;
@@ -353,8 +411,9 @@ class Renderer {
      * @param {string} fontSize font size with unit
      * @param {string} alignment text alignment
      * @param {string} background background type to render
+     * @param {number} jagging intensity of jagging to use
      */
-    renderLabel(lines, font, fontSize, alignment, background) {
+    renderLabel(lines, font, fontSize, alignment, background, jagging) {
         // Measure the text and required padding
         const textDim = this.measurer.textDimensions(lines, font, fontSize, alignment);
         const padding = this._getPadding(textDim, background);
@@ -391,6 +450,11 @@ class Renderer {
             // Finally render the desired label on the background
             this.fillText(lines, font, fontSize, alignment, textDim);
         });
+        if (jagging > 0) {
+            this.withCtx(() => {}, ctx => {
+                this.clipJagging(textDim, TEXT_PADDING, jagging);
+            });
+        }
     }
 
     renderArrow(shaftWidth, arrowLength, fletchWidth, headWidth) {
@@ -535,7 +599,8 @@ function main() {
             inputs.font(),
             FONT_SIZE,
             inputs.alignment(),
-            inputs.background()
+            inputs.background(),
+            0
         );
     };
 
@@ -546,7 +611,8 @@ function main() {
             inputs.letterfont(),
             LETTER_FONT_SIZE,
             inputs.letteralignment(),
-            background
+            background,
+            50
         );
     }
 
