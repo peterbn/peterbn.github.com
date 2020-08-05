@@ -259,7 +259,7 @@ class Renderer {
         });
     }
 
-    renderBackgroundLetter(textBB, padding) {
+    renderBackgroundLetter(textBB, padding, background) {
         const ctxconfig = ctx => {
             ctx.fillStyle = this.bgcolor;
             ctx.lineJoin = 'miter';
@@ -269,34 +269,37 @@ class Renderer {
                 textBB.width + 2 * padding + BACKGROUND_STROKE_WIDTH, textBB.height + 2 * padding + BACKGROUND_STROKE_WIDTH);
         });
 
-        // Generate a dirty background by randomly putting down darkened blobs
-        const smearctxconfig = ctx => {
-            const smearColor = this.pSBC(-0.30, this.bgcolor); // darken by 30%
-            ctx.fillStyle = smearColor;
-            ctx.lineJoin = 'miter';
-            ctx.globalCompositionOperation = 'burn';
-            ctx.globalAlpha = 0.1
+        if (background === 'letter_dirty') {
+            // Generate a dirty background by randomly putting down darkened blobs
+            const smearctxconfig = ctx => {
+                const smearColor = this.pSBC(-0.30, this.bgcolor); // darken by 30%
+                ctx.fillStyle = smearColor;
+                ctx.lineJoin = 'miter';
+                ctx.globalCompositionOperation = 'burn';
+                ctx.globalAlpha = 0.1
+            }
+
+            const randInt = (max) => Math.floor(Math.random() * Math.floor(max));
+            const randomCoord = () => {
+                return {
+                    x: randInt(textBB.width),
+                    y: randInt(textBB.height),
+                }
+            };
+            this.withCtx(smearctxconfig, ctx => {
+                const intensity = Math.floor((textBB.width * textBB.height) / 100);
+                const maxRadius = Math.min(textBB.width, textBB.height) / 8;
+                for (let i = 0; i < intensity; i++) {
+                    const center = randomCoord();
+
+                    const radius = Math.max(1, randInt(maxRadius));
+                    ctx.beginPath();
+                    ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            });
         }
 
-        const randInt = (max) => Math.floor(Math.random() * Math.floor(max));
-        const randomCoord = () => {
-            return {
-                x: randInt(textBB.width),
-                y: randInt(textBB.height),
-            }
-        };
-        this.withCtx(smearctxconfig, ctx => {
-            const intensity = Math.floor((textBB.width * textBB.height) / 100);
-            const maxRadius = Math.min(textBB.width, textBB.height) / 8;
-            for (let i = 0; i < intensity; i++) {
-                const center = randomCoord();
-
-                const radius = Math.max(1, randInt(maxRadius));
-                ctx.beginPath();
-                ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
-                ctx.fill();
-            }
-        });
     }
 
     renderBackgroundCircle(textBB, padding) {
@@ -376,8 +379,9 @@ class Renderer {
                 case 'rectangle':
                     this.renderBackgroundRectangle(textDim, TEXT_PADDING);
                     break;
-                case 'letter':
-                    this.renderBackgroundLetter(textDim, TEXT_PADDING);
+                case 'letter_dirty':
+                case 'letter_clean':
+                    this.renderBackgroundLetter(textDim, TEXT_PADDING, background);
                     break;
             }
 
@@ -493,6 +497,10 @@ class Inputs {
         return document.getElementById('font-letter').value;
     }
 
+    letterdirtybackground() {
+        return document.getElementById('letter-background').checked;
+    }
+
     arrowLength() {
         return parseInt(document.getElementById('arrowLength').value);
     }
@@ -532,12 +540,13 @@ function main() {
     };
 
     const updateLetter = () => {
+        const background = inputs.letterdirtybackground() ? 'letter_dirty' : 'letter_clean';
         renderer.renderLabel(
             inputs.letter(),
             inputs.letterfont(),
             LETTER_FONT_SIZE,
             inputs.letteralignment(),
-            'letter'
+            background
         );
     }
 
