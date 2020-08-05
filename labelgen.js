@@ -2,7 +2,7 @@ const TEXT_PADDING = 16;
 const LINE_SKIP = 6;
 const BACKGROUND_STROKE_WIDTH = 16;
 const FONT_SIZE = '80px';
-const LETTER_FONT_SIZE = '16pt';
+const LETTER_FONT_SIZE = '18pt';
 
 function randInt(max) { return Math.floor(Math.random() * Math.floor(max)) }
 
@@ -285,8 +285,8 @@ class Renderer {
 
             const randomCoord = () => {
                 return {
-                    x: randInt(textBB.width),
-                    y: randInt(textBB.height),
+                    x: randInt(textBB.width + 2 * padding) - padding,
+                    y: randInt(textBB.height + 2 * padding) - padding,
                 }
             };
             this.withCtx(smearctxconfig, ctx => {
@@ -347,7 +347,7 @@ class Renderer {
             ctx.fill();
         }
 
-        for (let i = 0; i < textBB.width / 5; i++) {
+        for (let i = 0; i < textBB.width / 10; i++) {
             // top
             this.withCtx(clipconfig, ctx => {
                 const pos = randInt(textBB.width + 2 * padding);
@@ -362,7 +362,7 @@ class Renderer {
                 randJag(ctx);
             });
         }
-        for (let i = 0; i < textBB.height / 5; i++) {
+        for (let i = 0; i < textBB.height / 10; i++) {
             // top
             this.withCtx(clipconfig, ctx => {
                 const pos = randInt(textBB.height + 2 * padding);
