@@ -276,8 +276,6 @@ class Renderer {
         if (background === 'letter_dirty') {
             // Generate a dirty background by randomly putting down darkened blobs
             const smearctxconfig = ctx => {
-                const smearColor = this.pSBC(-0.30, this.bgcolor); // darken by 30%
-                ctx.fillStyle = smearColor;
                 ctx.lineJoin = 'miter';
                 ctx.globalCompositeOperation = 'burn';
                 ctx.globalAlpha = 0.1
@@ -293,6 +291,9 @@ class Renderer {
                 const intensity = Math.floor((textBB.width * textBB.height) / 100);
                 const maxRadius = Math.min(textBB.width, textBB.height) / 8;
                 for (let i = 0; i < intensity; i++) {
+                    const darkIntensity = -0.5 * Math.random();
+                    const smearColor = this.pSBC(darkIntensity, this.bgcolor); // darken by random percentage
+                    ctx.fillStyle = smearColor;
                     const center = randomCoord();
 
                     const radius = Math.max(1, randInt(maxRadius));
