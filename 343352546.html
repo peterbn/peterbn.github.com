@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, width=device-width, viewport-fit=cover" />
+        <style type="text/css">
+            .quarter {
+              width: 25vw;
+              background-color: pink;
+              overflow: hidden;
+            }
+            .testcircle {
+              width: 84px;
+              height: 84px;
+              border-radius: 42px;
+              background-color: red;
+            }
+        </style>
+    </head>
+
+    <body>
+      <div class="quarter"><div class='testcircle' id="pop"></div></div>
+      <div id='output' style='width: 100vw'></div>
+      <script>
+        if (1==0) {
+          document.getElementById("pop").innerHTML = "POP";
+          var content = 'user-scalable=no, width=' + screen.width;
+          var viewport = document.querySelector('meta[name=viewport]');
+          viewport.setAttribute('content', content);
+        }
+        var screenWidth = screen.width;
+        var windowWidth = window.screen.width;
+        var availWindowWidth = window.screen.availWidth;
+        var innerWindowWidth = window.innerWidth;
+        var viewportWidth = document.getElementById('output').clientWidth;
+        document.getElementById('output').innerHTML = "screen.width: " + screenWidth + "<br>"
+                                                    + "window.screen.width: " + windowWidth + "<br>" 
+                                                    + "window.screen.availWidth: " + availWindowWidth + "<br>"
+                                                    + "window.innerWindowWidth: " + innerWindowWidth + "<br>" 
+                                                    + "div.clientWidth: " + viewportWidth;
+      </script>
+    </body>
+</html>
