@@ -1,0 +1,12 @@
+<!doctype HTML>
+<html>
+<body>
+<div id="output"></div>
+<script>
+let adId = window.device && window.device.adId;
+if (adId) {
+  window.getElementById("output").innerText = "AdID in WebView: " + adId;
+} else {
+  window.getElementById("output").innerText = "Unable to get AdId in WebView";
+}
+</script>
