@@ -2,12 +2,27 @@
 <html>
 <body>
   <h1>WebView AdID test page</h1>
-<div id="output"></div>
+<div id="adid"></div>
+  <div id="ipaddress"></div>
+  <div id="ipaddress_network"></div>
 <script>
 let adId = window.device && window.device.adId;
 if (adId) {
-  document.getElementById("output").innerText = "AdID in WebView: " + adId;
+  document.getElementById("adid").innerText = "AdID in WebView: " + adId;
 } else {
-  document.getElementById("output").innerText = "Unable to get AdId in WebView";
+  document.getElementById("adid").innerText = "Unable to get AdId in WebView";
 }
+
+ let ipAddress = window.device && window.device.ipAddress;
+if (adId) {
+  document.getElementById("ipaddress").innerText = "IpAddress in WebView: " + ipAddress;
+} else {
+  document.getElementById("ipaddress").innerText = "Unable to get IP address in WebView";
+}
+  fetch("https://api64.ipify.org").then(resp => resp.text()).then(networkIp => {
+    document.getElementById("ipaddress_network").innerText = "Network IP address: " + networkIp;
+  }).catch(e => {
+  
+    document.getElementById("ipaddress_network").innerText = "Unable to get IP address from network";
+  });
 </script>
